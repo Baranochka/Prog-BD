@@ -17,7 +17,7 @@ from docx import Document
 import requests
 from docx.shared import Pt
 
-version = "v0.2" # Надо менять версию после каждого изменения
+version = "v0.1" # Надо менять версию после каждого изменения
 latest_version = None
 
 data = []
@@ -1070,7 +1070,7 @@ def UpdateWord(doc, table_index, row_index, cell_index, new_text, font_size=12, 
 
 
 def CheckUpdate():
-    url = "https://api.github.com/repos/Baranochka/Prog/releases/latest"
+    url = "https://api.github.com/repos/Baranochka/Prog-BD/releases/latest"
     try:
         response = requests.get(url)
         if response.status_code == 200:
@@ -1086,7 +1086,7 @@ def CheckUpdate():
 
 
 def Update():
-        url = f"https://github.com/Baranochka/Prog/releases/download/{latest_version}/Program.BD.exe"
+        url = f"https://github.com/Baranochka/Prog-BD/releases/download/{latest_version}/Program.BD.exe"
         cur_path_exe = os.path.dirname(sys.executable)
         save_path = os.path.join(cur_path_exe, 'update\\Program BD.exe')
         response = requests.get(url, stream=True)
