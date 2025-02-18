@@ -123,11 +123,11 @@ class MSSQL(Database):
                    birthdate: Optional[datetime]) -> Optional[List[List[str]]]:
         # try:
             # Начинаем с базового запроса
-            query = "SELECT fru, last_lat, name_rus, nla, och, oche, pob, dob, " \
+            query = "SELECT fru, last_lat, name_rus, nla, och, oche, ctz1, dob, " \
                     "sex, pob, cob, pas_ser, pas_num, pds, pde, visa_priz, vis_ser, vis_num, " \
                     "d_poluch, vis_end, tel_nom, d_enter, date_okon, mcs, mcn, k, " \
                     "dnd, dog_obsh, rf, rfd, mot, ser, nmr, vis_krat, vis_id, gos_nap, " \
-                    "gos_start, kontrakt, kont_start, kont_end " \
+                    "kont_start, kontrakt, kont_start, kont_end " \
                     "FROM persons"
 
             # Список условий и параметров

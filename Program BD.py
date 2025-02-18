@@ -17,7 +17,7 @@ from docx import Document
 import requests
 from docx.shared import Pt
 
-version = "v0.1" # Надо менять версию после каждого изменения
+version = "v0.2" # Надо менять версию после каждого изменения
 latest_version = None
 
 data = []
@@ -1002,11 +1002,11 @@ def ComplectionWord(file_out, window_save):
         UpdateWord(doc,1, 27, 22, "X") # Пол
     UpdateWord(doc, 1, 29, 2, data[row_click][11]) # Серия паспорта
     UpdateWord(doc, 1, 29, 6, data[row_click][12]) # Номер паспорта
-    UpdateWord(doc, 1, 29, 14, data[row_click][13], 11) # Дата выдачи паспорта
+    UpdateWord(doc, 1, 29, 15, data[row_click][13], 11) # Дата выдачи паспорта
     UpdateWord(doc, 1, 29, 19, data[row_click][14], 11) # Дата срока действия паспорта
     if data[row_click][25]:
         num = data[row_click][25]
-        UpdateWord(doc, 2, 2, 0, f"Г. МОСКВА, КОЧНОВСКИЙ ПР., Д.7, КОРПУС {num[0]}") # Наличие визы
+        UpdateWord(doc, 2, 2, 0, f"Г. МОСКВА, КОЧНОВСКИЙ ПР., Д.7, КОРПУС {num[0]}") 
     UpdateWord(doc, 2, 3, 14, data[row_click][21]) # Дата въезда
     UpdateWord(doc, 2, 3, 23, data[row_click][22]) # Срок пребывания
     if data[row_click][28] == "нет":
