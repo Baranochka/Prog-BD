@@ -127,7 +127,7 @@ class MSSQL(Database):
                     "sex, pob, cob, pas_ser, pas_num, pds, pde, visa_priz, vis_ser, vis_num, " \
                     "d_poluch, vis_end, tel_nom, d_enter, date_okon, mcs, mcn, k, " \
                     "dnd, dog_obsh, rf, rfd, mot, ser, nmr, vis_krat, vis_id, gos_nap, " \
-                    "kont_start, kontrakt, kont_start, kont_end " \
+                    "kont_start, kontrakt, kont_start, kont_end, gos_start, gos_end, star " \
                     "FROM persons"
 
             # Список условий и параметров
@@ -165,7 +165,7 @@ class MSSQL(Database):
                 list_row = []
                 for i, field in enumerate(row):
                     #print(field,i)
-                    if isinstance(field, datetime) or i in [7, 13, 14, 18, 19, 21, 22, 29, 30, 36, 38, 39]:
+                    if isinstance(field, datetime) or i in [7, 13, 14, 18, 19, 21, 22, 29, 30, 36, 38, 39, 40, 41]:
                         if field is None:
                             list_row.append("          ")
                         else:

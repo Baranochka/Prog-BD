@@ -3,11 +3,12 @@
 
 from datetime import datetime
 import subprocess
-import tkinter as tk
+# from turtle import width
+import customtkinter as cstk
 from tkinter import ttk
 from tkinter import messagebox
 import openpyxl
-from PIL import Image, ImageTk
+from PIL import Image
 from configparser import ConfigParser
 from backend import MSSQL
 import os
@@ -17,7 +18,7 @@ from docx import Document
 import requests
 from docx.shared import Pt
 
-version = "v0.2" # Надо менять версию после каждого изменения
+version = "v0.3" # Надо менять версию после каждого изменения
 latest_version = None
 
 data = []
@@ -67,42 +68,44 @@ PASSWORD      = None
 
 
 
-class WindowAuthorizationConnectionBD(tk.Toplevel):  
+class WindowAuthorizationConnectionBD(cstk.CTkToplevel):  
     def __init__(self, parent):
         super().__init__(parent)
 
         self.parent = parent
-        self.attributes("-topmost", True)
+        # self.attributes("-topmost", True)
         self.title("Авторизация")
-        center_window(self, 300, 200)
-        self.config(bg="white")
+        center_window(self, 300, 200) 
+        self.configure(fg_color="white")
         self.iconbitmap(ico_path)
         
-        self.frame_auth = tk.Frame(self, bg="white")
-        self.frame_auth.pack(expand=True, fill=tk.BOTH)
-        tk.Label(self.frame_auth, text="Авторизация", bg="white",font=("Arial", 12)).place(x=100, y=10)
-        tk.Label(self.frame_auth, text="Логин", bg="white").place(x=130, y=40)
-        self.entry_login = tk.Entry(self.frame_auth, width=30,borderwidth=2)
+        self.frame_auth = cstk.CTkFrame(self, fg_color="white")
+        self.frame_auth.pack(expand=True, fill=cstk.BOTH)
+        cstk.CTkLabel(self.frame_auth, text="Авторизация", bg_color="white",font=("Arial", 17)).place(x=100, y=10)
+        cstk.CTkLabel(self.frame_auth, text="Логин", bg_color="white", height=15).place(x=130, y=40)
+        self.entry_login = cstk.CTkEntry(self.frame_auth, width=180, justify="center")
+        
         self.entry_login.place(x=60, y=60)
-        tk.Label(self.frame_auth, text="Пароль", bg="white").place(x=125, y=80)
-        self.entry_password = tk.Entry(self.frame_auth, width=30 ,borderwidth=2)
-        self.entry_password.place(x=60, y=100)
-        self.entry_password.config(show="*") 
+        cstk.CTkLabel(self.frame_auth, text="Пароль", bg_color="white", height=10).place(x=126, y=90)
+        self.entry_password = cstk.CTkEntry(self.frame_auth, width=180, justify="center")
+       
+        self.entry_password.place(x=60, y=110)
+        self.entry_password.configure(show="*") 
 
-        self.frame_incorrect = tk.Frame(self, bg="white")
+        self.frame_incorrect = cstk.CTkFrame(self, fg_color="white")
            
-        tk.Label(self.frame_incorrect, text="Соединение не установлено", bg="white", fg="red").place(x=75, y=75)
+        cstk.CTkLabel(self.frame_incorrect, text="Соединение не установлено", fg_color="white", text_color="red").place(x=75, y=75)
         self.frame_incorrect.pack_forget()
 
-        self.frame_correct = tk.Frame(self, bg="white")
+        self.frame_correct = cstk.CTkFrame(self, fg_color="white")
            
-        tk.Label(self.frame_correct, text="Соединение установлено", bg="white", fg="green").place(x=75, y=75)
+        cstk.CTkLabel(self.frame_correct, text="Соединение установлено", fg_color="white", text_color="green").place(x=75, y=75)
         self.frame_correct.pack_forget()
 
-        self.entry_login.bind("<FocusIn>", lambda e: self.entry_login.delete(0, tk.END))
-        self.entry_password.bind("<FocusIn>", lambda e: self.entry_password.delete(0, tk.END))
+        self.entry_login.bind("<FocusIn>", lambda e: self.entry_login.delete(0, cstk.END))
+        self.entry_password.bind("<FocusIn>", lambda e: self.entry_password.delete(0, cstk.END))
 
-        tk.Button(self.frame_auth, text="Подключиться", command=self.connect).place(x=100, y=130)
+        cstk.CTkButton(self.frame_auth, text="Подключиться", command=self.connect).place(x=80, y=150)
         # Перехватываем нажатие на крестик (закрытие окна)
         self.protocol("WM_DELETE_WINDOW", self.close_app)
 
@@ -120,18 +123,18 @@ class WindowAuthorizationConnectionBD(tk.Toplevel):
         db = MSSQL(DRIVER, SERVER_NAME, DATABASE_NAME, USERNAME, PASSWORD)
         print(db.is_connected)
         if db.is_connected == True:
-            self.frame_correct.pack(expand=True, fill=tk.BOTH)
+            self.frame_correct.pack(expand=True, fill=cstk.BOTH)
             self.after(1000, self.hide_correct_frame)
             
         else:
-            self.frame_incorrect.pack(expand=True, fill=tk.BOTH)
+            self.frame_incorrect.pack(expand=True, fill=cstk.BOTH)
             self.after(1000, self.hide_incorrect_frame)
     
     def hide_incorrect_frame(self):
         self.frame_incorrect.pack_forget()
-        self.frame_auth.pack(expand=True, fill=tk.BOTH)
-        self.entry_login.delete(0, tk.END)
-        self.entry_password.delete(0, tk.END)
+        self.frame_auth.pack(expand=True, fill=cstk.BOTH)
+        self.entry_login.delete(0, cstk.END)
+        self.entry_password.delete(0, cstk.END)
     
     def hide_correct_frame(self):
         
@@ -139,105 +142,70 @@ class WindowAuthorizationConnectionBD(tk.Toplevel):
         self.parent.deiconify()
 
 # Описание класса графической части программы
-class WindowProgramm(tk.Tk):
+class WindowProgramm(cstk.CTk):
     # Инициализация окна программы и откликов в программе
     def __init__(window):
         super().__init__()
         # Описание окна
         window.title("Программа для работы с БД")
         center_window(window, 1000, 600)
-        window.config(bg="white")
+        window.configure(fg_color="white")
         # Устанавливаем иконку (Только .ico!)
         window.iconbitmap(ico_path)
-        # Загружаем изображение
-        window.image = Image.open(jpg_path)
-        window.image = window.image.resize((150, 100))  
-        window.photo = ImageTk.PhotoImage(window.image)
 
-        # Создаём Label с изображением
-        tk.Label(window, image=window.photo, borderwidth=0, highlightthickness=0).pack(pady=20,anchor="w")
+        # Создаём CTkLabel с изображением
+        my_image = cstk.CTkImage(light_image=Image.open(jpg_path), size=(150, 100))
 
+        cstk.CTkLabel(window, image=my_image, text="").place(x=10,y=10)
 
         """--------------------------------------------------ФИО---------------------------------------------------"""
 
-        # Создание контейнера для ФИО
-        window.frame_fio = tk.Frame(bg="white")
-        window.frame_fio.pack(fill=tk.X)
-
         # Создание ярлыка и текстового поля для ввода фамилии
-        tk.Label(master=window.frame_fio, text="Фамилия:", bg="white").grid(row=1, column=0, sticky="e")
-        window.entry_familia = tk.Entry(master=window.frame_fio, width=50,borderwidth=2)
-        window.entry_familia.grid(row=1, column=1)
+        cstk.CTkLabel(master=window, text="Фамилия:", bg_color="white").place(x=20, y=150)
+        window.entry_familia = cstk.CTkEntry(master=window, width=250)
+        window.entry_familia.place(x=90, y=150)
+        
+        # # Создание ярлыка и текстового поля для ввода имени
+        cstk.CTkLabel(master=window, text="Имя:", bg_color="white").place(x=20, y=180)
+        window.entry_name = cstk.CTkEntry(master=window, width=250)
+        window.entry_name.place(x=90, y=180)
 
-        # Создание ярлыка и текстового поля для ввода имени
-        tk.Label(master=window.frame_fio, text="Имя:", bg="white").grid(row=2, column=0, sticky="e")
-        window.entry_name = tk.Entry(master=window.frame_fio, width=50,borderwidth=2)
-        window.entry_name.grid(row=2, column=1)
-
-        # Создание ярлыка и текстового поля для ввода отчества
-        tk.Label(master=window.frame_fio, text="Отчество:", bg="white").grid(row=3, column=0, sticky="e")
-        window.entry_otchestvo = tk.Entry(master=window.frame_fio, width=50,borderwidth=2)
-        window.entry_otchestvo.grid(row=3, column=1)
+        # # Создание ярлыка и текстового поля для ввода отчества
+        cstk.CTkLabel(master=window, text="Отчество:", bg_color="white").place(x=20, y=210)
+        window.entry_otchestvo = cstk.CTkEntry(master=window, width=250)
+        window.entry_otchestvo.place(x=90, y=210)
 
         """---------------------------------------------------ДАТА--------------------------------------------------"""
 
-        # Создание контейнера для даты
-        window.frame_data = tk.Frame(window,bg="white")
-        window.frame_data.pack(fill=tk.X)
-
         # Создание ярлыка даты рождения
-        tk.Label(window.frame_data, text="Дата рождения:",bg="white").grid(row=0, column=0, padx=5)
+        cstk.CTkLabel(window, text="Дата рождения:",bg_color="white").place(x=20, y=240)
 
         # Переменные для хранения значений даты рождения
-        window.day_var = tk.StringVar(value="1")
-        window.month_var = tk.StringVar(value="1")
-        window.year_var = tk.StringVar(value="1900")
+        window.day_var = cstk.StringVar(value="1")
+        window.month_var = cstk.StringVar(value="1")
+        window.year_var = cstk.StringVar(value="1900")
         
-        # Spinbox для дня от 1 до 31
-        window.day_spinbox = tk.Spinbox(window.frame_data, from_=1, to=31, width=5, textvariable=window.day_var)
-        window.day_spinbox.grid(row=0, column=1, padx=5)
         
-        # Spinbox для месяца от 1 до 12
-        window.month_spinbox = tk.Spinbox(window.frame_data, from_=1, to=12, width=5, textvariable=window.month_var)
-        window.month_spinbox.grid(row=0, column=2, padx=5)
+        # CTkSpinbox для дня от 1 до 31
+        cstk.CTkEntry(master=window, textvariable=window.day_var, width=20).place(x=130, y=240)
+       
         
-        # Spinbox для года от 1900 до 2025
-        window.year_spinbox = tk.Spinbox(window.frame_data, from_=1900, to=2025, width=7, textvariable=window.year_var)
-        window.year_spinbox.grid(row=0, column=3, padx=5)
-
-        """------------------------------------------------------ГАЛОЧКИ-----------------------------------------------------------"""
-
-        # # Переменные для хранения значений состояния галочек
-        # window.var_check_fam = tk.BooleanVar()
-        # window.var_check_name = tk.BooleanVar()
-        # window.var_check_otch = tk.BooleanVar()
-        # window.var_check_data = tk.BooleanVar()
-        # window.var_check_all = tk.BooleanVar()
-
-        # # Создание галочек
-        # tk.Checkbutton(window.frame_fio, variable=window.var_check_fam, bg="white").grid(row=1, column=2, padx=5)
-        # tk.Checkbutton(window.frame_fio, variable=window.var_check_name, bg="white").grid(row=2, column=2, padx=5)
-        # tk.Checkbutton(window.frame_fio, variable=window.var_check_otch, bg="white").grid(row=3, column=2, padx=5)
-        # tk.Checkbutton(window.frame_data, variable=window.var_check_data, bg="white").grid(row=0, column=4, padx=5)
+        # CTkSpinbox для месяца от 1 до 12
+        cstk.CTkEntry(master=window, textvariable=window.month_var, width=20).place(x=160, y=240)
         
-        # # Создание контейнера для галочки ALL
-        # window.frame_all = tk.Frame(bg="white")
-        # window.frame_all.pack(fill=tk.X)
+        # CTkSpinbox для года от 1900 до 2025
+        cstk.CTkEntry(master=window, textvariable=window.year_var, width=45).place(x=190, y=240)
 
-        # # Создание кнопки "Выделить всё"
-        # tk.Checkbutton(window.frame_all,text="Выделить всё", variable=window.var_check_all, bg="white").pack(side="left")
-        # window.var_check_all.trace_add("write", window.sync_checkboxes)
         
         """---------------------------------------------------КНОПКА-ПОИСКА--------------------------------------------------------------"""
 
         # Создание кнопки "Поиск"
-        window.search_button = tk.Button(window, text="Поиск", command=window.click_find)
-        window.search_button.pack(pady=10)
+        cstk.CTkButton(window, text="Поиск", command=window.click_find).place(x=450,y=240)
 
         """------------------------------------------------------ТАБЛИЦА-------------------------------------------------------------"""
 
         # Создание контейнера для таблицы (изначально скрыт)
-        window.frame_table = tk.Frame(bg="white")
+        window.frame_table = cstk.CTkFrame(window, fg_color="white",width=1000,height=310)
         
         # Отключение видимости таблицы
         window.frame_table.pack_forget()  
@@ -284,50 +252,49 @@ class WindowProgramm(tk.Tk):
                         #    "Срок обучения с",                       #38     kont_start
                         #    "Срок обучения по",                      #39     kont_end
         )               
-        
+        style = ttk.Style()
+        style.configure("Custom.Treeview", font=("Arial", 14))
         # Создание таблицы
-        window.tree = ttk.Treeview(window.frame_table, columns=window.columns, show='headings')
+        window.tree = ttk.Treeview(window.frame_table, columns=window.columns, height=20, show='headings', style="Custom.Treeview")
 
         # Определение размера столбцов
         for col in window.columns :
             window.tree.heading(col, text=col)
-            window.tree.column(col, anchor="center")
+            window.tree.column(col, anchor="center", stretch=True, width=300)
         
 
         # Создание пролистывания по таблице
-        scrollbar_y = tk.Scrollbar(window.frame_table, orient="vertical", command=window.tree.yview)
-        scrollbar_y.pack(side="right", fill="y")
+        scrollbar_y = cstk.CTkScrollbar(window.frame_table, width=15, height=50)
+        scrollbar_y.place(x=985, y=0)
         window.tree.configure(yscrollcommand=scrollbar_y.set)
 
-        scrollbar_x = tk.Scrollbar(window.frame_table, orient="horizontal", command=window.tree.xview)
-        scrollbar_x.pack(side="bottom", fill="x")
-        window.tree.configure(xscrollcommand=scrollbar_x.set)
+        # scrollbar_x = cstk.CTkScrollbar(window.frame_table, width=15, height=15)
+        # scrollbar_x.place(x=0, y=295)
+        # window.tree.configure(xscrollcommand=scrollbar_x.set)
         
-        window.tree.pack(expand=True, fill=tk.BOTH)
-
-
+        window.tree.place(x=0, y=0, relwidth=1, relheight=1)
 
         """--------------------------------------------------------ОШИБКА-ОТСУТСТВИЯ-ДАННЫХ-----------------------------------------------------------"""
 
         # Создание контейнера для ошибки при отсутствии вводных данных
-        window.frame_false = tk.Frame(bg="white")
+        window.frame_false = cstk.CTkFrame(window, fg_color="white")
         
         # Отключение видимости ошибки
         window.frame_false.pack_forget() 
         
         # Создание ярлыка отсутствия галочек
-        tk.Label(master=window.frame_false, text="Введите данные", bg="white",fg="red").pack(side="top")
+        cstk.CTkLabel(master=window.frame_false, text="Введите данные", fg_color="white", text_color="red").pack(side="top")
 
         """--------------------------------------------------------ОШИБКА-ОТСУТСТВИЯ-СТУДЕНТОВ-----------------------------------------------------------"""
 
         # Создание контейнера для ошибки при отсутствии студентов
-        window.frame_false_stud = tk.Frame(bg="white")
+        window.frame_false_stud = cstk.CTkFrame(window, fg_color="white")
 
         # Отключение видимости ошибки
         window.frame_false_stud.pack_forget()
 
         # Создание ярлыка отсутствия галочек
-        tk.Label(master=window.frame_false_stud, text="Студент(ы) не найден(ы)", bg="white", fg="red").pack(side="top")
+        cstk.CTkLabel(master=window.frame_false_stud, text="Студент(ы) не найден(ы)", fg_color="white", text_color="red").pack(side="top")
 
         """-------------------------------------------------------ОТКЛИК-НА-ТАБЛИЦУ----------------------------------------------------------"""
 
@@ -346,13 +313,12 @@ class WindowProgramm(tk.Tk):
                         if window.month_var.get() == "1":
                             if window.year_var.get() == "1900":
                                 
-                                window.frame_table.pack_forget() 
-                                window.frame_false.pack(expand=True, fill=tk.BOTH)
+                                window.frame_table.place_forget() 
+                                window.frame_false.place(x=440,y=290)
                                 return
 
-        window.frame_false_stud.pack_forget()
-        window.frame_false.pack_forget()
-        
+        window.frame_false_stud.place_forget()
+        window.frame_false.place_forget()
         window.find()    
         
     # Функция поиска
@@ -373,180 +339,146 @@ class WindowProgramm(tk.Tk):
         data = db.get_person(surname, name, patronymic, birthdate)
 
         if not data:
-            window.frame_table.pack_forget()
-            window.frame_false_stud.pack(expand=True, fill=tk.BOTH)
+            window.frame_table.place_forget()
+            window.frame_false_stud.place(x=440,y=290)
         else:
             for i, var in enumerate(data):
-                window.tree.insert("", tk.END, iid=f"I00{i}", values=var)
-            window.frame_table.pack(expand=True, fill=tk.BOTH)
+                window.tree.insert("", cstk.END, iid=f"I00{i}", values=var)
+            window.frame_table.place(x=0, y=290)
             
     # Реализация изменения в таблице     
     def click_on_table(window, event):
         row = window.tree.identify_row(event.y)
         global row_click
         row_click = int(row[1:]) #I000
-        WindowInformation(window)
-        #print(row_click)
-        # # Определение координат строки для изменения
-        # item = window.tree.selection()[0]
-        # col = window.tree.identify_column(event.x)
-        
-        # col_index = int(col[1:]) - 1
-        # x, y, width, height = window.tree.bbox(item, col_index)
-
-        # # Создание строки изменения
-        # entry = tk.Entry(window.tree)
-        # entry.place(x=x, y=y, width=width, height=height)
-        # entry.insert(0, window.tree.item(item, "values")[col_index])
-        # entry.focus()
-
-        # # Функция обработки нажатия на Enter
-        # def on_enter(event):
-        #     new_value = entry.get()
-        #     values = list(window.tree.item(item, "values"))
-        #     values[col_index] = new_value
-        #     data[0][col_index] = entry.get()
-        #     window.tree.item(item, values=values)
-        #     entry.destroy()
-
-        # # Обработки нажатия на Enter
-        # entry.bind("<Return>", on_enter)
-        # # Обработка нажатия вне поля
-        # entry.bind("<FocusOut>", lambda e: entry.destroy())
-
-    
-    # Функция изменяет состояние галочек при нажатии на 'Выделить всё'
-    def sync_checkboxes(window, *args): 
-        window.var_check_fam.set(window.var_check_all.get())
-        window.var_check_name.set(window.var_check_all.get())
-        window.var_check_otch.set(window.var_check_all.get())
-        window.var_check_data.set(window.var_check_all.get())
+        WindowInformation(window)       
 
 
-class WindowInformation(tk.Toplevel):
+class WindowInformation(cstk.CTkToplevel):
 
     def __init__(window_inf, parent):
         super().__init__(parent)
         # Описание окна
         window_inf.title("Информация о студенте")
         center_window(window_inf, 900, 600)
-        window_inf.config(bg="white")
+        window_inf.configure(fg_color="white")
         window_inf.iconbitmap(ico_path)
-        bg_blue = "#6699CC"
-        wh_color = "white"
-        bl_color = "black"
-        RoundedFrame(window_inf, width=890, height=90, radius=30, color="#6699CC").place(x=5, y=5)
-        window_inf.do_lable( "Фамилия:", 10, 10, bg_blue,wh_color)
-        window_inf.do_lable_value( data[row_click][0], 100, 9) if data[row_click][0] else window_inf.do_lable_value(  "Не указано", 100, 9)
-        window_inf.do_lable( "Имя:", 10, 40, bg_blue, wh_color)
-        window_inf.do_lable_value( data[row_click][2], 100, 39) if data[row_click][2] else window_inf.do_lable_value(  "Не указано", 100, 39)
-        window_inf.do_lable(  "Отчество:", 10, 70, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][4], 100, 69) if data[row_click][4] else window_inf.do_lable_value(  "Не указано", 100, 69)
+        blue = "#6699CC"
+        white = "white"
+        black = "black"
+        my_font = cstk.CTkFont(family="Arial", size=16)
         
-        window_inf.do_lable(  "Фамилия (лат):", 500, 10, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][1], 600, 9) if data[row_click][1] else window_inf.do_lable_value(  "Не указано", 600, 9)
-        window_inf.do_lable(  "Имя (лат):", 500, 40, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][3], 600, 39) if data[row_click][3] else window_inf.do_lable_value(  "Не указано", 600, 39)
-        window_inf.do_lable(  "Отчество (лат):", 500, 70, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][5], 600, 69) if data[row_click][5] else window_inf.do_lable_value(  "Не указано", 600, 69)
+        cstk.CTkFrame(window_inf, width=890, height=90, fg_color=blue).place(x=5, y=5)
+        window_inf.do_lable("Фамилия:", 10, 10, blue, blue, white)
+        window_inf.do_lable(data[row_click][0], 80, 10, blue, blue, white) if data[row_click][0] else window_inf.do_lable("Не указано", 80, 10, blue, blue, white)
+        window_inf.do_lable("Имя:", 10, 40, blue, blue, white)
+        window_inf.do_lable(data[row_click][2], 80, 40, blue, blue, white) if data[row_click][2] else window_inf.do_lable("Не указано", 80, 40, blue, blue, white)
+        window_inf.do_lable("Отчество:", 10, 70, blue, blue, white)
+        window_inf.do_lable(data[row_click][4], 80, 70, blue, blue, white) if data[row_click][4] else window_inf.do_lable("Не указано", 80, 70, blue, blue, white)
+        
+        window_inf.do_lable("Фамилия (лат):", 500, 10, blue, blue, white)
+        window_inf.do_lable(data[row_click][1], 600, 10, blue, blue, white) if data[row_click][1] else window_inf.do_lable("Не указано", 600, 10, blue, blue, white)
+        window_inf.do_lable("Имя (лат):", 500, 40, blue, blue, white)
+        window_inf.do_lable(data[row_click][3], 600, 40, blue, blue, white) if data[row_click][3] else window_inf.do_lable("Не указано", 600, 40, blue, blue, white)
+        window_inf.do_lable("Отчество (лат):", 500, 70, blue, blue, white)
+        window_inf.do_lable(data[row_click][5], 600, 70, blue, blue, white) if data[row_click][5] else window_inf.do_lable("Не указано", 600, 70, blue, blue, white)
       
-        window_inf.do_lable(  "Пол:", 10, 100, wh_color, bl_color)
-        window_inf.do_lable_value(  data[row_click][8], 45, 99) if data[row_click][8] else window_inf.do_lable_value(  "Не указано", 45, 99)  
-        window_inf.do_lable(  "Дата рождения:", 110, 100, wh_color, bl_color)
-        window_inf.do_lable_value(  data[row_click][7], 205, 99) if data[row_click][7] else window_inf.do_lable_value(  "Не указано", 205, 99)        
-        window_inf.do_lable(  "Телефон:", 270, 100, wh_color, bl_color)
-        window_inf.do_lable_value(  f"+7{data[row_click][20]}", 330, 99) if data[row_click][20] else window_inf.do_lable_value(  "Не указано", 330, 99)
+        window_inf.do_lable("Пол:", 10, 100, white, white, black)
+        window_inf.do_lable(data[row_click][8], 45, 100, white, white, black) if data[row_click][8] else window_inf.do_lable("Не указано", 45, 100, white, white, black)  
+        window_inf.do_lable("Дата рождения:", 110, 100, white, white, black)
+        window_inf.do_lable(data[row_click][7], 215, 100, white, white, black) if data[row_click][7] else window_inf.do_lable("Не указано", 215, 100, white, white, black)        
+        window_inf.do_lable("Телефон:", 290, 100, white, white, black)
+        window_inf.do_lable(f"+7{data[row_click][20]}", 350, 100, white, white, black) if data[row_click][20] else window_inf.do_lable("Не указано", 350, 100, white, white, black)
 
-        RoundedFrame(window_inf, width=400, height=95, radius=30, color=bg_blue).place(x=5, y=125)
-        window_inf.do_lable(  "Гражданство:", 10, 130, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][6], 95, 129) if data[row_click][6] else window_inf.do_lable_value(  "Не указано", 95, 129)
-        window_inf.do_lable(  "Государство рождения:", 10, 160, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][9], 150, 159) if data[row_click][9] else window_inf.do_lable_value(  "Не указано", 150, 159)
-        window_inf.do_lable(  "Город рождения:", 10, 190, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][10], 120, 189) if data[row_click][10] else window_inf.do_lable_value(  "Не указано", 120, 189)
+        cstk.CTkFrame(window_inf, width=400, height=95, fg_color=blue).place(x=5, y=125)
+        window_inf.do_lable("Гражданство:", 10, 130, blue, blue, white)
+        window_inf.do_lable(data[row_click][6], 100, 130, blue, blue, white) if data[row_click][6] else window_inf.do_lable("Не указано", 100, 130, blue, blue, white)
+        window_inf.do_lable("Государство рождения:", 10, 160, blue, blue, white)
+        window_inf.do_lable(data[row_click][9], 160, 160, blue, blue, white) if data[row_click][9] else window_inf.do_lable("Не указано", 160, 160, blue, blue, white)
+        window_inf.do_lable("Город рождения:", 10, 190, blue, blue, white)
+        window_inf.do_lable(data[row_click][10], 120, 190, blue, blue, white) if data[row_click][10] else window_inf.do_lable("Не указано", 120, 190, blue, blue, white)
  
-        RoundedFrame(window_inf, width=400, height=90, radius=30, color=bg_blue).place(x=5, y=230)
-        tk.Label(master=window_inf, text="Паспортные данные", bg=bg_blue, fg=wh_color, font=("Arial", 12)).place(x=10, y=235)
+        cstk.CTkFrame(window_inf, width=400, height=90, fg_color=blue).place(x=5, y=230)
+        cstk.CTkLabel(master=window_inf, text="Паспортные данные", bg_color=blue, fg_color=blue, text_color=white, font=my_font).place(x=10, y=235)
         
-        window_inf.do_lable(  "Серия", 10, 265, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][11], 13, 285) if data[row_click][11] else window_inf.do_lable_value(  "Не указано", 13, 285)
-        window_inf.do_lable(  "Номер", 110, 265, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][12], 113, 285) if data[row_click][12] else window_inf.do_lable_value(  "Не указано", 113, 285)
-        window_inf.do_lable(  "Дата выдачи", 210, 265, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][13], 213, 285) if data[row_click][13] else window_inf.do_lable_value(  "Не указано", 213, 285)
-        window_inf.do_lable(  "Срок действия", 300, 265, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][14], 303, 285) if data[row_click][14] else window_inf.do_lable_value(  "Не указано", 303, 285)
+        window_inf.do_lable("Серия", 10, 265, blue, blue, white)
+        window_inf.do_lable(  data[row_click][11], 13, 285, blue, white, blue) if data[row_click][11] else window_inf.do_lable("Не указано", 13, 285, blue, white, blue)
+        window_inf.do_lable("Номер", 110, 265, blue, blue, white)
+        window_inf.do_lable(data[row_click][12], 113, 285, blue, white, blue) if data[row_click][12] else window_inf.do_lable("Не указано", 113, 285, blue, white, blue)
+        window_inf.do_lable("Дата выдачи", 210, 265, blue, blue, white)
+        window_inf.do_lable(data[row_click][13], 213, 285, blue, white, blue) if data[row_click][13] else window_inf.do_lable("Не указано", 213, 285, blue, white, blue)
+        window_inf.do_lable("Срок действия", 300, 265, blue, blue, white)
+        window_inf.do_lable(data[row_click][14], 303, 285, blue, white, blue) if data[row_click][14] else window_inf.do_lable("Не указано", 303, 285, blue, white, blue)
 
         if data[row_click][28] == "нет":
-            RoundedFrame(window_inf, width=400, height=90, radius=30, color=bg_blue).place(x=425, y=230)
-            tk.Label(master=window_inf, text="Виза", bg=bg_blue, fg=wh_color, font=("Arial", 12)).place(x=430, y=235)
-            window_inf.do_lable(  "Серия", 430, 265, bg_blue, wh_color)
-            window_inf.do_lable_value(  data[row_click][16], 433, 285) if data[row_click][16] else window_inf.do_lable_value(  "Не указано", 433, 285)
-            window_inf.do_lable(  "Номер", 530, 265, bg_blue, wh_color)
-            window_inf.do_lable_value(  data[row_click][17], 533, 285) if data[row_click][17] else window_inf.do_lable_value(  "Не указано", 533, 285)
-            window_inf.do_lable(  "Дата выдачи", 630, 265, bg_blue, wh_color)
-            window_inf.do_lable_value(  data[row_click][18], 633, 285) if data[row_click][18] else window_inf.do_lable_value(  "Не указано", 633, 285)
-            window_inf.do_lable(  "Срок действия", 730, 265, bg_blue, wh_color)
-            window_inf.do_lable_value(  data[row_click][19], 733, 285) if data[row_click][19] else window_inf.do_lable_value(  "Не указано", 733, 285)
+            cstk.CTkFrame(window_inf, width=400, height=90, fg_color=blue).place(x=425, y=230)
+            cstk.CTkLabel(master=window_inf, text="Виза", bg_color=blue, fg_color=blue, text_color=white, font=my_font).place(x=430, y=235)
+            window_inf.do_lable("Серия", 430, 265, blue, blue, white)
+            window_inf.do_lable(data[row_click][16], 433, 285, blue, white, blue) if data[row_click][16] else window_inf.do_lable("Не указано", 433, 285, blue, white, blue)
+            window_inf.do_lable("Номер", 530, 265, blue, blue, white)
+            window_inf.do_lable(data[row_click][17], 533, 285, blue, white, blue) if data[row_click][17] else window_inf.do_lable("Не указано", 533, 285, blue, white, blue)
+            window_inf.do_lable("Дата выдачи", 630, 265, blue, blue, white)
+            window_inf.do_lable(data[row_click][18], 633, 285, blue, white, blue) if data[row_click][18] else window_inf.do_lable("Не указано", 633, 285, blue, white, blue)
+            window_inf.do_lable("Срок действия", 730, 265, blue, blue, white)
+            window_inf.do_lable(data[row_click][19], 733, 285, blue, white, blue) if data[row_click][19] else window_inf.do_lable("Не указано", 733, 285, blue, white, blue)
         elif data[row_click][28] == "ВНЖ":
-            RoundedFrame(window_inf, width=400, height=90, radius=30, color=bg_blue).place(x=425, y=230)
-            tk.Label(master=window_inf, text="ВНЖ", bg="white", font=("Arial", 12)).place(x=430, y=235)
-            window_inf.do_lable(  "Серия", 430, 265, bg_blue, wh_color)
-            window_inf.do_lable_value(  data[row_click][31], 433, 285) if data[row_click][31] else window_inf.do_lable_value(  "Не указано", 433, 285)
-            window_inf.do_lable(  "Номер", 530, 265, bg_blue, wh_color)
-            window_inf.do_lable_value(  data[row_click][32], 533, 285) if data[row_click][32] else window_inf.do_lable_value(  "Не указано", 533, 285)
-            window_inf.do_lable(  "Дата выдачи", 630, 265, bg_blue, wh_color)
-            window_inf.do_lable_value(  data[row_click][29], 633, 285) if data[row_click][29] else window_inf.do_lable_value(  "Не указано", 633, 285)
-            window_inf.do_lable(  "Срок действия", 730, 265, bg_blue, wh_color)
-            window_inf.do_lable_value(  data[row_click][30], 733, 285) if data[row_click][30] else window_inf.do_lable_value(  "Не указано", 733, 285)
+            cstk.CTkFrame(window_inf, width=400, height=90, fg_color=blue).place(x=425, y=230)
+            cstk.CTkLabel(master=window_inf, text="ВНЖ", bg_color=blue, fg_color=blue, text_color=white, font=my_font).place(x=430, y=235)
+            window_inf.do_lable("Серия", 430, 265, blue, blue, white)
+            window_inf.do_lable(data[row_click][31], 433, 285, blue, white, blue) if data[row_click][31] else window_inf.do_lable("Не указано", 433, 285, blue, white, blue)
+            window_inf.do_lable("Номер", 530, 265, blue, blue, white)
+            window_inf.do_lable(data[row_click][32], 533, 285, blue, white, blue) if data[row_click][32] else window_inf.do_lable("Не указано", 533, 285, blue, white, blue)
+            window_inf.do_lable("Дата выдачи", 630, 265, blue, blue, white)
+            window_inf.do_lable(data[row_click][29], 633, 285, blue, white, blue) if data[row_click][29] else window_inf.do_lable("Не указано", 633, 285, blue, white, blue)
+            window_inf.do_lable("Срок действия", 730, 265, blue, blue, white)
+            window_inf.do_lable(data[row_click][30], 733, 285, blue, white, blue) if data[row_click][30] else window_inf.do_lable("Не указано", 733, 285, blue, white, blue)
         elif data[row_click][28] == "РВПО":
-            RoundedFrame(window_inf, width=400, height=90, radius=30, color=bg_blue).place(x=425, y=230)
-            tk.Label(master=window_inf, text="РВПО", bg="white", font=("Arial", 12)).place(x=430, y=235)
-            window_inf.do_lable(  "Серия", 430, 265, bg_blue, wh_color)
-            window_inf.do_lable_value(  data[row_click][31], 433, 285) if data[row_click][31] else window_inf.do_lable_value(  "Не указано", 433, 285)
-            window_inf.do_lable(  "Номер", 530, 265, bg_blue, wh_color)
-            window_inf.do_lable_value(  data[row_click][32], 533, 285) if data[row_click][32] else window_inf.do_lable_value(  "Не указано", 533, 285)
-            window_inf.do_lable(  "Дата выдачи", 630, 265, bg_blue, wh_color)
-            window_inf.do_lable_value(  data[row_click][29], 633, 285) if data[row_click][29] else window_inf.do_lable_value(  "Не указано", 633, 285)
-            window_inf.do_lable(  "Срок действия", 730, 265, bg_blue, wh_color)
-            window_inf.do_lable_value(  data[row_click][30], 733, 285) if data[row_click][30] else window_inf.do_lable_value(  "Не указано", 733, 285)
+            cstk.CTkFrame(window_inf, width=400, height=90, fg_color=blue).place(x=425, y=230)
+            cstk.CTkLabel(master=window_inf, text="РВПО", bg_color=blue, fg_color=blue, text_color=white, font=my_font).place(x=430, y=235)
+            window_inf.do_lable("Серия", 430, 265, blue, blue, white)
+            window_inf.do_lable(data[row_click][31], 433, 285, blue, white, blue) if data[row_click][31] else window_inf.do_lable("Не указано", 433, 285, blue, white, blue)
+            window_inf.do_lable("Номер", 530, 265, blue, blue, white)
+            window_inf.do_lable(data[row_click][32], 533, 285, blue, white, blue) if data[row_click][32] else window_inf.do_lable("Не указано", 533, 285, blue, white, blue)
+            window_inf.do_lable("Дата выдачи", 630, 265, blue, blue, white)
+            window_inf.do_lable(data[row_click][29], 633, 285, blue, white, blue) if data[row_click][29] else window_inf.do_lable("Не указано", 633, 285, blue, white, blue)
+            window_inf.do_lable("Срок действия", 730, 265, blue, blue, white)
+            window_inf.do_lable(data[row_click][30], 733, 285, blue, white, blue) if data[row_click][30] else window_inf.do_lable("Не указано", 733, 285, blue, white, blue)
 
-        window_inf.do_lable(  "Дата въезда", 10, 325, wh_color, bl_color)
-        window_inf.do_lable_value(  data[row_click][21], 13, 345) if data[row_click][21] else window_inf.do_lable_value(  "Не указано", 13, 345)
-        window_inf.do_lable(  "Срок пребывания до", 110, 325, wh_color, bl_color)
-        window_inf.do_lable_value(  data[row_click][22], 139, 345) if data[row_click][22] else window_inf.do_lable_value(  "Не указано", 139, 345)
+        window_inf.do_lable("Дата въезда", 10, 325, white, white, black)
+        window_inf.do_lable(data[row_click][21], 13, 345, white, white, black) if data[row_click][21] else window_inf.do_lable("Не указано", 13, 345, white, white, black)
+        window_inf.do_lable("Срок пребывания до", 110, 325, white, white, black)
+        window_inf.do_lable(data[row_click][22], 139, 345, white, white, black) if data[row_click][22] else window_inf.do_lable("Не указано", 139, 345, white, white, black)
         
         
-        RoundedFrame(window_inf, width=400, height=90, radius=30, color=bg_blue).place(x=5, y=375)
-        tk.Label(master=window_inf, text="Миграционная карта", bg=bg_blue, fg=wh_color, font=("Arial", 12)).place(x=10, y=380)
-        window_inf.do_lable(  "Серия", 10, 410, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][23], 13, 430) if data[row_click][23] else window_inf.do_lable_value(  "Не указано", 13, 410)
-        window_inf.do_lable(  "Номер", 100, 410, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][24], 103, 430) if data[row_click][24] else window_inf.do_lable_value(  "Не указано", 103, 410)
+        cstk.CTkFrame(window_inf, width=400, height=90, fg_color=blue).place(x=5, y=375)
+        cstk.CTkLabel(master=window_inf, text="Миграционная карта", bg_color=blue, fg_color=blue, text_color=white, font=my_font).place(x=10, y=380)
+        window_inf.do_lable("Серия", 10, 410, blue, blue, white)
+        window_inf.do_lable(data[row_click][23], 13, 430, blue, white, blue) if data[row_click][23] else window_inf.do_lable("Не указано", 13, 430, blue, white, blue)
+        window_inf.do_lable("Номер", 100, 410, blue, blue, white)
+        window_inf.do_lable(data[row_click][24], 103, 430, blue, white, blue) if data[row_click][24] else window_inf.do_lable("Не указано", 103, 430, blue, white, blue)
         
-        RoundedFrame(window_inf, width=400, height=90, radius=30, color=bg_blue).place(x=425, y=375)
-        tk.Label(master=window_inf, text="Общежитие", bg=bg_blue, fg=wh_color, font=("Arial", 12)).place(x=430, y=380)
+        cstk.CTkFrame(window_inf, width=400, height=90, fg_color=blue).place(x=425, y=375)
+        cstk.CTkLabel(master=window_inf, text="Общежитие", bg_color=blue, fg_color=blue, text_color=white, font=my_font).place(x=430, y=380)
         num = data[row_click][25]
-        window_inf.do_lable(  "Номер корпуса", 435, 410, bg_blue, wh_color)
-        window_inf.do_lable_value( num[0], 470, 430) if data[row_click][25] else window_inf.do_lable_value(  "Не указано", 470, 430)
-        window_inf.do_lable(  "Дата начала договора", 535, 410, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][26], 565, 430) if data[row_click][26] else window_inf.do_lable_value(  "Не указано", 565, 430)
-        window_inf.do_lable(  "Номер договора", 670, 410, bg_blue, wh_color)
-        window_inf.do_lable_value(  data[row_click][27], 673, 430) if data[row_click][27] else window_inf.do_lable_value(  "Не указано", 673, 430)
+        window_inf.do_lable("Номер корпуса", 435, 410, blue, blue, white)
+        window_inf.do_lable(num[0], 470, 430, blue, white, blue) if data[row_click][25] else window_inf.do_lable("Не указано", 470, 430, blue, white, blue)
+        window_inf.do_lable("Дата начала договора", 535, 410, blue, blue, white)
+        window_inf.do_lable(data[row_click][26], 565, 430, blue, white, blue) if data[row_click][26] else window_inf.do_lable("Не указано", 565, 430, blue, white, blue)
+        window_inf.do_lable("Номер договора", 680, 410, blue, blue, white)
+        window_inf.do_lable(data[row_click][27], 683, 430, blue, white, blue) if data[row_click][27] else window_inf.do_lable("Не указано", 683, 430, blue, white, blue)
 
         # Создание кнопки "Сформировать"
-        tk.Button(window_inf, text="Сформировать в Excel",bg=bg_blue,fg=wh_color, command=window_inf.click_form_excel).place(x=750, y=500)
-        tk.Button(window_inf, text="Сформировать уведомление",bg=bg_blue,fg=wh_color, command=window_inf.click_form_Word).place(x=550, y=500)
+        cstk.CTkButton(window_inf, text="Сформировать в Excel", text_color=white, fg_color=blue, command=window_inf.click_form_excel).place(x=740, y=500)
+        cstk.CTkButton(window_inf, text="Сформировать уведомление", text_color=white, fg_color=blue, command=window_inf.click_form_Word).place(x=540, y=500)
         
         # Фиксация окна
         window_inf.grab_set()  
         window_inf.focus_set()  
         window_inf.wait_window()
 
-    def do_lable(window_inf, text, x, y, bg_color, fg_color):
-        tk.Label(master=window_inf, text=text, bg=bg_color, fg=fg_color).place(x=x, y=y)
-    def do_lable_value(window_inf, text, x, y):
-        tk.Label(master=window_inf, text=text, bg="white", relief="ridge" , borderwidth=3).place(x=x, y=y)
+    def do_lable(window_inf, text, x, y, bg_color, fg_color, text_color):
+        cstk.CTkLabel(master=window_inf, text=text, height=10, fg_color=fg_color, bg_color=bg_color, text_color=text_color).place(x=x, y=y)
+    
 
     def click_form_excel(window_inf):
         WindowSaveExcel(window_inf)
@@ -555,30 +487,30 @@ class WindowInformation(tk.Toplevel):
         WindowSaveWord(window_inf)
 
 
-class WindowSaveExcel(tk.Toplevel):
+class WindowSaveExcel(cstk.CTkToplevel):
     def __init__(window_save, parent): 
         super().__init__(parent)
         # Описание окна
         window_save.title("Сохранение в Exel")
         center_window(window_save, 300, 100)
-        window_save.config(bg="white")
+        window_save.configure(fg_color="white")
         window_save.iconbitmap(ico_path)
         # Создание ярлыка сохранения
-        tk.Label(master=window_save, text="Сохранение", bg="white", font=("Arial", 12)).pack(side="top",pady=7)
+        cstk.CTkLabel(master=window_save, text="Сохранение", fg_color="white", text_color="black", font=("Arial", 16)).pack(side="top",padx=7)
         
         #Создание контейнера для названия файла
-        window_save.frame_name_file = tk.Frame(window_save,bg="white")
-        window_save.frame_name_file.pack(fill=tk.X)
+        window_save.frame_name_file = cstk.CTkFrame(window_save, fg_color="white")
+        window_save.frame_name_file.pack(fill=cstk.X)
 
         # Создание ярлыка и текстового поля для ввода названия файла
-        tk.Label(master=window_save.frame_name_file, text="Название файла:", bg="white").grid(row=0,column=0)
-        window_save.entry_name_file = tk.Entry(master=window_save.frame_name_file, width=25, relief="groove", borderwidth=5)
+        cstk.CTkLabel(master=window_save.frame_name_file, text="Название файла:", fg_color="white", text_color="black").grid(row=0,column=0,padx=7)
+        window_save.entry_name_file = cstk.CTkEntry(master=window_save.frame_name_file, width=150)
         window_save.entry_name_file.insert(0, f"{data[row_click][1]} {data[row_click][3]}")
 
-        window_save.entry_name_file.grid(row=0,column=1)
+        window_save.entry_name_file.grid(row=0,column=1,pady=7)
 
         # Создание кнопки "Сохранить"
-        window_save.search_button = tk.Button(window_save, text="Сохранить", command=window_save.click_save)
+        window_save.search_button = cstk.CTkButton(window_save, text="Сохранить", command=window_save.click_save)
         window_save.search_button.pack(side="right", padx=5)
 
         # Обработка нажатия внутри области
@@ -594,41 +526,41 @@ class WindowSaveExcel(tk.Toplevel):
         window_save.destroy()
 
 
-class WindowSaveWord(tk.Toplevel):
+class WindowSaveWord(cstk.CTkToplevel):
     def __init__(window_save, parent): 
         super().__init__(parent)
         # Описание окна
         window_save.title("Сохранение в Exel")
         center_window(window_save, 500, 250)
-        window_save.config(bg="white")
+        window_save.configure(fg_color="white")
         window_save.iconbitmap(ico_path)
         # Создание ярлыка сохранения
-        tk.Label(master=window_save, text="Сохранение", bg="white", font=("Arial", 12)).place(x=210,y=10)
+        cstk.CTkLabel(master=window_save, text="Сохранение", fg_color="white", text_color="white", font=("Arial", 16)).place(x=210,y=10)
         
-        window_save.var_check_1 = tk.BooleanVar()
-        window_save.var_check_2 = tk.BooleanVar()
-        window_save.var_check_3 = tk.BooleanVar()
+        window_save.var_check_1 = cstk.BooleanVar()
+        window_save.var_check_2 = cstk.BooleanVar()
+        window_save.var_check_3 = cstk.BooleanVar()
         
         # # Создание галочек
-        tk.Checkbutton(window_save, variable=window_save.var_check_1, bg="white").place(x=10,y=50)
-        tk.Label(master=window_save, text="о предоставлении иностранному гражданину (лицу без гражданства)\n" \
-                "академического отпуска образовательной/научной организации;", bg="white").place(x=30, y=50)
-        tk.Checkbutton(window_save, variable=window_save.var_check_2, bg="white").place(x=10,y=90)
-        tk.Label(master=window_save, text="о досрочном прекращении обучения иностранного гражданина\n" \
-                "(лица без гражданства) в образовательной/научной организации;", bg="white").place(x=30, y=90)
-        tk.Checkbutton(window_save, variable=window_save.var_check_3, bg="white").place(x=10,y=130)
-        tk.Label(master=window_save, text="о завершении обучения иностранного гражданина (лица без гражданства)\n" \
-                "(лица без гражданства) в образовательной/научной организации;", bg="white").place(x=30, y=130)
+        cstk.CTkCheckBox(window_save, variable=window_save.var_check_1, bg_color="white").place(x=10,y=50)
+        cstk.CTkLabel(master=window_save, text="о предоставлении иностранному гражданину (лицу без гражданства)\n" \
+                "академического отпуска образовательной/научной организации;", bg_color="white").place(x=40, y=50)
+        cstk.CTkCheckBox(window_save, variable=window_save.var_check_2, bg_color="white").place(x=10,y=90)
+        cstk.CTkLabel(master=window_save, text="о досрочном прекращении обучения иностранного гражданина\n" \
+                "(лица без гражданства) в образовательной/научной организации;", bg_color="white").place(x=40, y=90)
+        cstk.CTkCheckBox(window_save, variable=window_save.var_check_3, bg_color="white").place(x=10,y=130)
+        cstk.CTkLabel(master=window_save, text="о завершении обучения иностранного гражданина (лица без гражданства)\n" \
+                "(лица без гражданства) в образовательной/научной организации;", bg_color="white").place(x=40, y=130)
                
 
         # Создание ярлыка и текстового поля для ввода названия файла
-        tk.Label(master=window_save, text="Название файла:", bg="white").place(x=30,y=180)
-        window_save.entry_name_file = tk.Entry(master=window_save, width=50, relief="groove", borderwidth=5)
+        cstk.CTkLabel(master=window_save, text="Название файла:", bg_color="white").place(x=30,y=180)
+        window_save.entry_name_file = cstk.CTkEntry(master=window_save, width=300)
         window_save.entry_name_file.insert(0, f"Уведомление {data[row_click][1]} {data[row_click][3]}")
         window_save.entry_name_file.place(x=30,y=200)
 
         # Создание кнопки "Сохранить"
-        window_save.search_button = tk.Button(window_save, text="Сохранить", command=window_save.click_save)
+        window_save.search_button = cstk.CTkButton(window_save, text="Сохранить", command=window_save.click_save)
         window_save.search_button.place(x=350,y=199)
 
         # Обработка нажатия внутри области
@@ -644,33 +576,9 @@ class WindowSaveWord(tk.Toplevel):
         window_save.destroy()
 
 
-class RoundedFrame(tk.Canvas):
-    def __init__(self, parent, width, height, radius=25, color="lightblue"):
-        super().__init__(parent, width=width, height=height, bg="white", highlightthickness=0)
-
-        # Рисуем скругленный прямоугольник
-        self.create_rounded_rect(0, 0, width, height, radius, fill=color, outline=color)
-
-    def create_rounded_rect(self, x1, y1, x2, y2, radius, **kwargs):
-        """Создаёт прямоугольник с закруглёнными углами"""
-        points = [
-            x1 + radius, y1,
-            x2 - radius, y1,
-            x2, y1,
-            x2, y1 + radius,
-            x2, y2 - radius,
-            x2, y2,
-            x2 - radius, y2,
-            x1 + radius, y2,
-            x1, y2,
-            x1, y2 - radius,
-            x1, y1 + radius,
-            x1, y1
-        ]
-        return self.create_polygon(points, smooth=True, **kwargs)
-
 # Функция центрирования окна
 def center_window(window, width, height):
+    
     # Получаем размеры экрана
     screen_width = window.winfo_screenwidth()
     screen_height = window.winfo_screenheight()
@@ -678,6 +586,7 @@ def center_window(window, width, height):
     # Вычисляем координаты верхнего левого угла
     x = (screen_width - width) // 2
     y = (screen_height - height) // 2
+    
 
     # Устанавливаем размеры и положение окна
     window.geometry(f"{width}x{height}+{x}+{y}")
@@ -964,9 +873,11 @@ def CompletionExcel(file_out):
         change_sheet(sheet, 112, 114, 0, date_naym[8],  114)
         change_sheet(sheet, 112, 118, 0, date_naym[9],  118)
         # Номер договора
-    
-    change_sheet(sheet, 114, 46, 4, data[row_click][27],  90)
+        change_sheet(sheet, 114, 46, 4, data[row_click][27],  90)
 
+    if "МО" in data[row_click][42] or "МОСКОВСКАЯ" in data[row_click][42]:
+        pass
+    
     # Сохранение изменений
     if os.path.isdir(".\\out"):
         pass
@@ -1018,12 +929,21 @@ def ComplectionWord(file_out, window_save):
         UpdateWord(doc, 2, 8, 8, data[row_click][34]) # Инденитификационный номер визы
         UpdateWord(doc, 2, 8, 24, data[row_click][18]) # Дата выдачи визы
         UpdateWord(doc, 2, 8, 31, data[row_click][19]) # Дата срока визы
-    if data[row_click][35] != None:
+    
+    year_kon_st = int(data[row_click][38][6]+data[row_click][38][7]+data[row_click][38][8]+data[row_click][38][9])
+    year_gos_st = int(data[row_click][40][6]+data[row_click][40][7]+data[row_click][40][8]+data[row_click][40][9])
+    if year_gos_st > year_kon_st:
         UpdateWord(doc, 2, 12, 10, "гос.направление", 11, False) # Направление
-        UpdateWord(doc, 2, 12, 21, data[row_click][36], 11) # Дата выдачи контракта
-    UpdateWord(doc, 2, 12, 28, data[row_click][37], 11) # Номер контракта
-    UpdateWord(doc, 2, 14, 5, data[row_click][38], 11) # Срок обучения с
-    UpdateWord(doc, 2, 14, 15, data[row_click][39], 11) # Срок обучения по
+        UpdateWord(doc, 2, 12, 21, data[row_click][40], 11) # Дата выдачи контракта
+        UpdateWord(doc, 2, 12, 28, data[row_click][35], 11) # Номер контракта
+        UpdateWord(doc, 2, 14, 5, data[row_click][40], 11) # Срок обучения с
+        UpdateWord(doc, 2, 14, 15, data[row_click][41], 11) # Срок обучения по
+    else:
+        UpdateWord(doc, 2, 12, 10, "контракт", 11, False) # Направление
+        UpdateWord(doc, 2, 12, 21, data[row_click][38], 11) # Дата выдачи контракта
+        UpdateWord(doc, 2, 12, 28, data[row_click][37], 11) # Номер контракта
+        UpdateWord(doc, 2, 14, 5, data[row_click][38], 11) # Срок обучения с
+        UpdateWord(doc, 2, 14, 15, data[row_click][39], 11) # Срок обучения по       
     
     # Сохранение изменений
     if os.path.isdir(".\\out"):
