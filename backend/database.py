@@ -1,4 +1,4 @@
-import sys
+import re
 from abc import ABC, abstractmethod
 from typing import Optional, List, Any
 from pyodbc import connect, Row
@@ -80,7 +80,7 @@ class MSSQL(Database):
     # def get_person(self,
     #                last_name: Optional[str],
     #                first_name: Optional[str],
-    #                patronymic: Optional[str],
+    #                och: Optional[str],
     #                birthday: Optional[datetime]) -> Optional[List[List[str]]]:
     #     try:
     #         self._cursor.execute(
@@ -88,8 +88,8 @@ class MSSQL(Database):
     #             "sex, pob, cob, pas_ser, pas_num, pds, pde, vis_ser, vis_num, vis_start"
     #             ", vis_end, tel_nom, d_enter, date_okon, mcs, mcn, obsch, d_naym, dog_obsh "
     #             "FROM persons WHERE fru=? OR name_rus=? OR och=? OR dob=?",
-    #             (last_name, first_name, patronymic, birthday))
-    #         self.__debug(last_name, first_name, patronymic, birthday)
+    #             (last_name, first_name, och, birthday))
+    #         self.__debug(last_name, first_name, och, birthday)
     #         all_rows = self._cursor.fetchall()
     #         new_all_rows = []
     #         list_row = []
@@ -119,7 +119,7 @@ class MSSQL(Database):
     def get_person(self,
                    surname: Optional[str],
                    name: Optional[str],
-                   patronymic: Optional[str],
+                   och: Optional[str],
                    birthdate: Optional[datetime]) -> Optional[List[List[str]]]:
         # try:
             # Начинаем с базового запроса
@@ -136,14 +136,26 @@ class MSSQL(Database):
 
             # Добавляем условия в зависимости от переданных аргументов
             if surname is not None:
-                conditions.append("fru = ?")
-                parameters.append(surname)
+                if self.check_rus_eng(surname):
+                    conditions.append("fru = ?")
+                    parameters.append(surname)
+                else:
+                    conditions.append("last_lat = ?")
+                    parameters.append(surname)
             if name is not None:
-                conditions.append("name_rus = ?")
-                parameters.append(name)
-            if patronymic is not None:
-                conditions.append("och = ?")
-                parameters.append(patronymic)
+                if self.check_rus_eng(name):
+                    conditions.append("name_rus = ?")
+                    parameters.append(name)
+                else:
+                    conditions.append("nla = ?")
+                    parameters.append(name)
+            if och is not None:
+                if self.check_rus_eng(och):
+                    conditions.append("och = ?")
+                    parameters.append(och)
+                else:
+                    conditions.append("oche = ?")
+                    parameters.append(och)
             if birthdate != datetime(1900, 1, 1):
                 conditions.append("dob = ?")
                 parameters.append(birthdate)
@@ -157,7 +169,7 @@ class MSSQL(Database):
 
             # Выполняем запрос
             self._cursor.execute(query, parameters)
-            self.__debug(f"DEBUG args = '{surname}' '{name}' '{patronymic}' '{birthdate}'")
+            self.__debug(f"DEBUG args = '{surname}' '{name}' '{och}' '{birthdate}'")
             all_rows = self._cursor.fetchall()
             new_all_rows = []
 
@@ -182,6 +194,9 @@ class MSSQL(Database):
             # self.__debug(e)
             # return None
 
+    def check_rus_eng(self,text) -> bool: 
+        return bool(re.search(r'[а-яА-ЯёЁ]', text))
+        
     def read_rows_by_id(self, ids: int) -> list[Row]:
         ...
 

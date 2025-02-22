@@ -1,24 +1,23 @@
 # Программа для работы с базой данных "Название" и последующего вывода в специальной форме в Exele
 # P.S. Извините за кринж
-
-from datetime import datetime
-import subprocess
-# from turtle import width
-import customtkinter as cstk
-from tkinter import ttk
-from tkinter import messagebox
-import openpyxl
-from PIL import Image
-from configparser import ConfigParser
-from backend import MSSQL
 import os
-from pathlib import Path
 import sys
-from docx import Document
+import re
 import requests
+import openpyxl
+import subprocess
+import customtkinter as cstk
+from PIL import Image
+from tkinter import ttk
+from pathlib import Path
+from docx import Document
+from backend import MSSQL
 from docx.shared import Pt
+from datetime import datetime
+from tkinter import messagebox
+from configparser import ConfigParser
 
-version = "v0.3" # Надо менять версию после каждого изменения
+version = "v0.4" # Надо менять версию после каждого изменения
 latest_version = None
 
 data = []
@@ -328,7 +327,7 @@ class WindowProgramm(cstk.CTk):
 
         surname = window.entry_familia.get().upper() if window.entry_familia.get() else None
         name = window.entry_name.get().upper() if window.entry_name.get() else None
-        patronymic = window.entry_otchestvo.get().upper() if window.entry_otchestvo.get() else None
+        och = window.entry_otchestvo.get().upper() if window.entry_otchestvo.get() else None
         day = window.day_var.get()
         month = window.month_var.get()
         year = window.year_var.get()
@@ -336,7 +335,7 @@ class WindowProgramm(cstk.CTk):
         global data
         global db
 
-        data = db.get_person(surname, name, patronymic, birthdate)
+        data = db.get_person(surname, name, och, birthdate)
 
         if not data:
             window.frame_table.place_forget()
@@ -874,10 +873,36 @@ def CompletionExcel(file_out):
         change_sheet(sheet, 112, 118, 0, date_naym[9],  118)
         # Номер договора
         change_sheet(sheet, 114, 46, 4, data[row_click][27],  90)
+    if data[row_click][42]:
+        pattern_reg = r"РЕСПУБЛИКА\s[А-ЯЁ]+(?:\s[А-ЯЁ]+)?|[А-ЯЁ]+(?:-[А-ЯЁ]+)?\s(?:ОБЛАСТЬ|КРАЙ|РЕСПУБЛИКА|АО)"
+        pattern_rayon = r"[А-ЯЁ]+(?:-[А-ЯЁ]+)?\s(?:РАЙОН)"
+        pattern_city = r"(?:Г|ПГТ|РП|КП|К|ДП|П|НП|С|М|Д|СЛ|СТ|СТ-ЦА|Х|КЛХ|СВХ)\.\s?\b[А-ЯЁ]+(?:-[А-ЯЁ]+)?\b"
+        pattern_street = r"(?:УЛ|АЛЛЕЯ|БУЛЬВАР|МАГИСТРАЛЬ|ПЕРЕУЛОК|ПЛОЩАДЬ|ПРОЕЗД|ПРОСПЕКТ|ПРОУЛОК|РАЗЪЕЗД|СПУСК|ТРАКТ|ТУПИК|ШОССЕ|УЛИЦА)\.?\s?[А-ЯЁ]+(?:-[А-ЯЁ]+)?|[А-ЯЁ]+(?:-[А-ЯЁ]+)?\s(?:УЛ|ПР|П|ПРОЕЗД|УЛИЦА|ПРОСПЕКТ|БУЛЬВАР)\.?"
+        pattern_dom = r"Д.\s?\b[0-9]+(?:[А-ЯЁ]+)?\b"
+        pattern_korp = r"КОРП.\s?\b[0-9]+\b|КОРП.\s?\b[А-ЯЁ]+\b"
+        pattern_str = r"СТР.\s?\b[0-9]+\b|СТР.\s?\b[А-ЯЁ]+\b"
+        pattern_kv = r"КВ.\s?\b[0-9]+\b"
+        reg = "".join(re.findall(pattern_reg, data[row_click][42]))
+        change_sheet(sheet, 83, 2, 4, reg, 122) 
+        rayon = "".join(re.findall(pattern_rayon, data[row_click][42]))
+        change_sheet(sheet, 85, 2, 4, rayon, 122)
+        city = "".join(re.findall(pattern_city, data[row_click][42]))
+        change_sheet(sheet, 87, 2, 4, city, 122)
+        street = "".join(re.findall(pattern_street, data[row_click][42]))
+        change_sheet(sheet, 89, 2, 4, street, 122)
+        dom = "".join(re.findall(pattern_dom, data[row_click][42]))
+        sheet.cell(row=91, column=2, value = f"ДОМ {dom.replace("Д. ","")}")
+        korp = "".join(re.findall(pattern_korp, data[row_click][42]))
+        str_ = "".join(re.findall(pattern_str, data[row_click][42]))
+        if korp:
+            sheet.cell(row=91, column=46, value = f"КОРПУС {korp.replace("КОРП. ","")}")
+        elif str_:  
+            sheet.cell(row=91, column=46, value = f"СТРОЕНИЕ {str_.replace("СТР. ","")}")
+        kv = "".join(re.findall(pattern_kv, data[row_click][42]))
+        if kv:
+            
+            sheet.cell(row=93, column=2, value = f"КВАРТИРА {kv.replace("КВ. ","")}")
 
-    if "МО" in data[row_click][42] or "МОСКОВСКАЯ" in data[row_click][42]:
-        pass
-    
     # Сохранение изменений
     if os.path.isdir(".\\out"):
         pass
