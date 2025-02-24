@@ -45,7 +45,7 @@ class MSSQL(Database):
             self._cursor = self._connection.cursor()
             if self._connection:
                 self.cond_conn = True
-                self.__debug("Successfully connected")
+                # self.__debug("Successfully connected")
         except Exception as e:
             self.cond_conn = False
             self.__debug(e)
@@ -165,18 +165,17 @@ class MSSQL(Database):
                 # query += " WHERE " + " OR ".join(conditions)
                 query += f" WHERE {' AND '.join(conditions)}"
 
-            debug(query)
+            # debug(query)
 
             # Выполняем запрос
             self._cursor.execute(query, parameters)
-            self.__debug(f"DEBUG args = '{surname}' '{name}' '{och}' '{birthdate}'")
+            # self.__debug(f"DEBUG args = '{surname}' '{name}' '{och}' '{birthdate}'")
             all_rows = self._cursor.fetchall()
             new_all_rows = []
 
             for row in all_rows:
                 list_row = []
                 for i, field in enumerate(row):
-                    #print(field,i)
                     if isinstance(field, datetime) or i in [7, 13, 14, 18, 19, 21, 22, 29, 30, 36, 38, 39, 40, 41]:
                         if field is None:
                             list_row.append("          ")
@@ -219,6 +218,7 @@ if __name__ == "__main__":
     import os
     config = ConfigParser()
     path = os.path.dirname(os.path.abspath(__file__))
+    print(path)
     config.read(f"{path}\\config.ini")
 
     DRIVER        = config["Test_Maks"]["DRIVER"]  
@@ -229,17 +229,14 @@ if __name__ == "__main__":
 
     db = MSSQL(DRIVER, SERVER_NAME, DATABASE_NAME, USERNAME, PASSWORD)
 
-    surname = "ФАМ"
-    birthdate = datetime(1990, 1, 1)
-
-    # is_find = db.is_person_exists(surname, None, None, birthdate)
-    # # debug(is_find)
-    # if is_find:
-    #     all_rows = db.get_person(surname, None, None, birthdate)
-    #
-    #     for row in all_rows:
-    #         debug(row)
-    
-    all_rows = db.get_person("ХАБИБИ", None, None, datetime(1900, 1, 1))
+    all_rows = db.get_person("ХРАЙЗАТ", None, None, datetime(1900, 1, 1))
     debug(all_rows)
-    debug(len(all_rows[0]))
+    col = ["fru", "last_lat", "name_rus", "nla", "och", "oche", "ctz1", "dob",
+                    "sex", "pob", "cob", "pas_ser", "pas_num", "pds", "pde", "visa_priz", "vis_sev", "vis_num",
+                    "d_poluch", "vis_endv", "vtel_nom", "d_enter", "date_okon", "mcs", "mcn", "k", 
+                    "dnd", "dog_obsh", "rf", "rfd", "motv", "ser", "nmr", "vis_krat", "vis_id", "gos_nap",
+                    "kont_start", "kontrakt", "kont_start", "kont_end", "gos_start", "gos_end", "star"]
+    i=0
+    for var, c in zip(all_rows[0], col):
+        debug(f"{i}. {c}: {var}")
+        i+=1
