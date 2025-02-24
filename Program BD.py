@@ -954,7 +954,24 @@ def ComplectionWord(file_out, window_save):
         UpdateWord(doc, 2, 8, 8, data[row_click][34]) # Инденитификационный номер визы
         UpdateWord(doc, 2, 8, 24, data[row_click][18]) # Дата выдачи визы
         UpdateWord(doc, 2, 8, 31, data[row_click][19]) # Дата срока визы
-    
+    elif data[row_click][28] == "РВПО":
+        UpdateWord(doc, 2, 6, 4, data[row_click][33], 12, False) # Кратност визы
+        UpdateWord(doc, 2, 6, 28, "РВПО",12) # Категория визы
+        # UpdateWord(doc, 2, 7, 3, "учеба", 12, False) # Цель визы
+        UpdateWord(doc, 2, 7, 19, data[row_click][31]) # Серия визы
+        UpdateWord(doc, 2, 7, 28, data[row_click][32]) # Номер визы
+        # UpdateWord(doc, 2, 8, 8, data[row_click][34]) # Инденитификационный номер визы        
+        UpdateWord(doc, 2, 8, 24, data[row_click][29]) # Дата выдачи визы
+        UpdateWord(doc, 2, 8, 31, data[row_click][30]) # Дата срока визы
+    elif data[row_click][28] == "ВНЖ":
+        UpdateWord(doc, 2, 6, 4, data[row_click][33], 12, False) # Кратност визы
+        UpdateWord(doc, 2, 6, 28, "ВНЖ",12) # Категория визы
+        # UpdateWord(doc, 2, 7, 3, "учеба", 12, False) # Цель визы
+        UpdateWord(doc, 2, 7, 19, data[row_click][31]) # Серия визы
+        UpdateWord(doc, 2, 7, 28, data[row_click][32]) # Номер визы
+        # UpdateWord(doc, 2, 8, 8, data[row_click][34]) # Инденитификационный номер визы        
+        UpdateWord(doc, 2, 8, 24, data[row_click][29]) # Дата выдачи визы
+        UpdateWord(doc, 2, 8, 31, data[row_click][30]) # Дата срока визы
     year_kon_st = int(data[row_click][38][6]+data[row_click][38][7]+data[row_click][38][8]+data[row_click][38][9])
     year_gos_st = int(data[row_click][40][6]+data[row_click][40][7]+data[row_click][40][8]+data[row_click][40][9])
     if year_gos_st > year_kon_st:
