@@ -17,7 +17,7 @@ from datetime import datetime
 from tkinter import messagebox
 from configparser import ConfigParser
 
-version = "v0.4" # Надо менять версию после каждого изменения
+version = "v0.5" # Надо менять версию после каждого изменения
 latest_version = None
 
 data = []
