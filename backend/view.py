@@ -10,7 +10,7 @@ from datetime import datetime
 from backend.update_app import UpdateApp
 
 # Переменная для хранения строки таблицы, на которую нажали
-row_click = 0
+__row_click__ = 0
 
 class View():
     def __init__(self, model, version: str) -> None:
@@ -316,8 +316,8 @@ class WindowProgramm(ctk.CTk):
     # Реализация изменения в таблице
     def click_on_table(self, event):
         row = self.tree.identify_row(event.y)
-        global row_click
-        row_click = int(row[1:])  # I000
+        global __row_click__
+        __row_click__ = int(row[1:])  # I000
         WindowInformation(self, self.model)
 
 
@@ -340,46 +340,46 @@ class WindowInformation(ctk.CTkToplevel):
         ctk.CTkFrame(self, width=890, height=90,
                       fg_color=blue).place(x=5, y=5)
         self.do_lable("Фамилия:", 10, 10, blue, blue, white)
-        self.do_lable(self.model.data[row_click][0], 80, 10, blue, blue, white) if self.model.data[row_click][0] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][0], 80, 10, blue, blue, white) if self.model.data[__row_click__][0] else self.do_lable(
             "Не указано", 80, 10, blue, blue, white)
         self.do_lable("Имя:", 10, 40, blue, blue, white)
-        self.do_lable(self.model.data[row_click][2], 80, 40, blue, blue, white) if self.model.data[row_click][2] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][2], 80, 40, blue, blue, white) if self.model.data[__row_click__][2] else self.do_lable(
             "Не указано", 80, 40, blue, blue, white)
         self.do_lable("Отчество:", 10, 70, blue, blue, white)
-        self.do_lable(self.model.data[row_click][4], 80, 70, blue, blue, white) if self.model.data[row_click][4] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][4], 80, 70, blue, blue, white) if self.model.data[__row_click__][4] else self.do_lable(
             "Не указано", 80, 70, blue, blue, white)
 
         self.do_lable("Фамилия (лат):", 500, 10, blue, blue, white)
-        self.do_lable(self.model.data[row_click][1], 600, 10, blue, blue, white) if self.model.data[row_click][1] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][1], 600, 10, blue, blue, white) if self.model.data[__row_click__][1] else self.do_lable(
             "Не указано", 600, 10, blue, blue, white)
         self.do_lable("Имя (лат):", 500, 40, blue, blue, white)
-        self.do_lable(self.model.data[row_click][3], 600, 40, blue, blue, white) if self.model.data[row_click][3] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][3], 600, 40, blue, blue, white) if self.model.data[__row_click__][3] else self.do_lable(
             "Не указано", 600, 40, blue, blue, white)
         self.do_lable("Отчество (лат):", 500, 70, blue, blue, white)
-        self.do_lable(self.model.data[row_click][5], 600, 70, blue, blue, white) if self.model.data[row_click][5] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][5], 600, 70, blue, blue, white) if self.model.data[__row_click__][5] else self.do_lable(
             "Не указано", 600, 70, blue, blue, white)
 
         self.do_lable("Пол:", 10, 100, white, white, black)
-        self.do_lable(self.model.data[row_click][8], 45, 100, white, white, black) if self.model.data[row_click][8] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][8], 45, 100, white, white, black) if self.model.data[__row_click__][8] else self.do_lable(
             "Не указано", 45, 100, white, white, black)
         self.do_lable("Дата рождения:", 110, 100, white, white, black)
-        self.do_lable(self.model.data[row_click][7], 215, 100, white, white, black) if self.model.data[row_click][7] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][7], 215, 100, white, white, black) if self.model.data[__row_click__][7] else self.do_lable(
             "Не указано", 215, 100, white, white, black)
         self.do_lable("Телефон:", 290, 100, white, white, black)
-        self.do_lable(f"+7{self.model.data[row_click][20]}", 350, 100, white, white,
-                            black) if self.model.data[row_click][20] else self.do_lable("Не указано", 350, 100, white, white, black)
+        self.do_lable(f"+7{self.model.data[__row_click__][20]}", 350, 100, white, white,
+                            black) if self.model.data[__row_click__][20] else self.do_lable("Не указано", 350, 100, white, white, black)
 
         ctk.CTkFrame(self, width=400, height=95,
                       fg_color=blue).place(x=5, y=125)
         self.do_lable("Гражданство:", 10, 130, blue, blue, white)
-        self.do_lable(self.model.data[row_click][6], 100, 130, blue, blue, white) if self.model.data[row_click][6] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][6], 100, 130, blue, blue, white) if self.model.data[__row_click__][6] else self.do_lable(
             "Не указано", 100, 130, blue, blue, white)
         self.do_lable("Государство рождения:",
                             10, 160, blue, blue, white)
-        self.do_lable(self.model.data[row_click][9], 160, 160, blue, blue, white) if self.model.data[row_click][9] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][9], 160, 160, blue, blue, white) if self.model.data[__row_click__][9] else self.do_lable(
             "Не указано", 160, 160, blue, blue, white)
         self.do_lable("Город рождения:", 10, 190, blue, blue, white)
-        self.do_lable(self.model.data[row_click][10], 120, 190, blue, blue, white) if self.model.data[row_click][10] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][10], 120, 190, blue, blue, white) if self.model.data[__row_click__][10] else self.do_lable(
             "Не указано", 120, 190, blue, blue, white)
 
         ctk.CTkFrame(self, width=400, height=90,
@@ -388,76 +388,76 @@ class WindowInformation(ctk.CTkToplevel):
                       fg_color=blue, text_color=white, font=my_font).place(x=10, y=235)
 
         self.do_lable("Серия", 10, 265, blue, blue, white)
-        self.do_lable(self.model.data[row_click][11], 13, 285, blue, white, blue) if self.model.data[row_click][11] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][11], 13, 285, blue, white, blue) if self.model.data[__row_click__][11] else self.do_lable(
             "Не указано", 13, 285, blue, white, blue)
         self.do_lable("Номер", 110, 265, blue, blue, white)
-        self.do_lable(self.model.data[row_click][12], 113, 285, blue, white, blue) if self.model.data[row_click][12] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][12], 113, 285, blue, white, blue) if self.model.data[__row_click__][12] else self.do_lable(
             "Не указано", 113, 285, blue, white, blue)
         self.do_lable("Дата выдачи", 210, 265, blue, blue, white)
-        self.do_lable(self.model.data[row_click][13], 213, 285, blue, white, blue) if self.model.data[row_click][13] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][13], 213, 285, blue, white, blue) if self.model.data[__row_click__][13] else self.do_lable(
             "Не указано", 213, 285, blue, white, blue)
         self.do_lable("Срок действия", 300, 265, blue, blue, white)
-        self.do_lable(self.model.data[row_click][14], 303, 285, blue, white, blue) if self.model.data[row_click][14] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][14], 303, 285, blue, white, blue) if self.model.data[__row_click__][14] else self.do_lable(
             "Не указано", 303, 285, blue, white, blue)
 
-        if self.model.data[row_click][28] == "нет":
+        if self.model.data[__row_click__][28] == "нет":
             ctk.CTkFrame(self, width=400, height=90,
                           fg_color=blue).place(x=425, y=230)
             ctk.CTkLabel(master=self, text="Виза", bg_color=blue,
                           fg_color=blue, text_color=white, font=my_font).place(x=430, y=235)
             self.do_lable("Серия", 430, 265, blue, blue, white)
-            self.do_lable(self.model.data[row_click][16], 433, 285, blue, white, blue) if self.model.data[row_click][16] else self.do_lable(
+            self.do_lable(self.model.data[__row_click__][16], 433, 285, blue, white, blue) if self.model.data[__row_click__][16] else self.do_lable(
                 "Не указано", 433, 285, blue, white, blue)
             self.do_lable("Номер", 530, 265, blue, blue, white)
-            self.do_lable(self.model.data[row_click][17], 533, 285, blue, white, blue) if self.model.data[row_click][17] else self.do_lable(
+            self.do_lable(self.model.data[__row_click__][17], 533, 285, blue, white, blue) if self.model.data[__row_click__][17] else self.do_lable(
                 "Не указано", 533, 285, blue, white, blue)
             self.do_lable("Дата выдачи", 630, 265, blue, blue, white)
-            self.do_lable(self.model.data[row_click][18], 633, 285, blue, white, blue) if self.model.data[row_click][18] else self.do_lable(
+            self.do_lable(self.model.data[__row_click__][18], 633, 285, blue, white, blue) if self.model.data[__row_click__][18] else self.do_lable(
                 "Не указано", 633, 285, blue, white, blue)
             self.do_lable("Срок действия", 730, 265, blue, blue, white)
-            self.do_lable(self.model.data[row_click][19], 733, 285, blue, white, blue) if self.model.data[row_click][19] else self.do_lable(
+            self.do_lable(self.model.data[__row_click__][19], 733, 285, blue, white, blue) if self.model.data[__row_click__][19] else self.do_lable(
                 "Не указано", 733, 285, blue, white, blue)
-        elif self.model.data[row_click][28] == "ВНЖ":
+        elif self.model.data[__row_click__][28] == "ВНЖ":
             ctk.CTkFrame(self, width=400, height=90,
                           fg_color=blue).place(x=425, y=230)
             ctk.CTkLabel(master=self, text="ВНЖ", bg_color=blue,
                           fg_color=blue, text_color=white, font=my_font).place(x=430, y=235)
             self.do_lable("Серия", 430, 265, blue, blue, white)
-            self.do_lable(self.model.data[row_click][31], 433, 285, blue, white, blue) if self.model.data[row_click][31] else self.do_lable(
+            self.do_lable(self.model.data[__row_click__][31], 433, 285, blue, white, blue) if self.model.data[__row_click__][31] else self.do_lable(
                 "Не указано", 433, 285, blue, white, blue)
             self.do_lable("Номер", 530, 265, blue, blue, white)
-            self.do_lable(self.model.data[row_click][32], 533, 285, blue, white, blue) if self.model.data[row_click][32] else self.do_lable(
+            self.do_lable(self.model.data[__row_click__][32], 533, 285, blue, white, blue) if self.model.data[__row_click__][32] else self.do_lable(
                 "Не указано", 533, 285, blue, white, blue)
             self.do_lable("Дата выдачи", 630, 265, blue, blue, white)
-            self.do_lable(self.model.data[row_click][29], 633, 285, blue, white, blue) if self.model.data[row_click][29] else self.do_lable(
+            self.do_lable(self.model.data[__row_click__][29], 633, 285, blue, white, blue) if self.model.data[__row_click__][29] else self.do_lable(
                 "Не указано", 633, 285, blue, white, blue)
             self.do_lable("Срок действия", 730, 265, blue, blue, white)
-            self.do_lable(self.model.data[row_click][30], 733, 285, blue, white, blue) if self.model.data[row_click][30] else self.do_lable(
+            self.do_lable(self.model.data[__row_click__][30], 733, 285, blue, white, blue) if self.model.data[__row_click__][30] else self.do_lable(
                 "Не указано", 733, 285, blue, white, blue)
-        elif self.model.data[row_click][28] == "РВПО":
+        elif self.model.data[__row_click__][28] == "РВПО":
             ctk.CTkFrame(self, width=400, height=90,
                           fg_color=blue).place(x=425, y=230)
             ctk.CTkLabel(master=self, text="РВПО", bg_color=blue,
                           fg_color=blue, text_color=white, font=my_font).place(x=430, y=235)
             self.do_lable("Серия", 430, 265, blue, blue, white)
-            self.do_lable(self.model.data[row_click][31], 433, 285, blue, white, blue) if self.model.data[row_click][31] else self.do_lable(
+            self.do_lable(self.model.data[__row_click__][31], 433, 285, blue, white, blue) if self.model.data[__row_click__][31] else self.do_lable(
                 "Не указано", 433, 285, blue, white, blue)
             self.do_lable("Номер", 530, 265, blue, blue, white)
-            self.do_lable(self.model.data[row_click][32], 533, 285, blue, white, blue) if self.model.data[row_click][32] else self.do_lable(
+            self.do_lable(self.model.data[__row_click__][32], 533, 285, blue, white, blue) if self.model.data[__row_click__][32] else self.do_lable(
                 "Не указано", 533, 285, blue, white, blue)
             self.do_lable("Дата выдачи", 630, 265, blue, blue, white)
-            self.do_lable(self.model.data[row_click][29], 633, 285, blue, white, blue) if self.model.data[row_click][29] else self.do_lable(
+            self.do_lable(self.model.data[__row_click__][29], 633, 285, blue, white, blue) if self.model.data[__row_click__][29] else self.do_lable(
                 "Не указано", 633, 285, blue, white, blue)
             self.do_lable("Срок действия", 730, 265, blue, blue, white)
-            self.do_lable(self.model.data[row_click][30], 733, 285, blue, white, blue) if self.model.data[row_click][30] else self.do_lable(
+            self.do_lable(self.model.data[__row_click__][30], 733, 285, blue, white, blue) if self.model.data[__row_click__][30] else self.do_lable(
                 "Не указано", 733, 285, blue, white, blue)
 
         self.do_lable("Дата въезда", 10, 325, white, white, black)
-        self.do_lable(self.model.data[row_click][21], 13, 345, white, white, black) if self.model.data[row_click][21] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][21], 13, 345, white, white, black) if self.model.data[__row_click__][21] else self.do_lable(
             "Не указано", 13, 345, white, white, black)
         self.do_lable("Срок пребывания до", 110,
                             325, white, white, black)
-        self.do_lable(self.model.data[row_click][22], 139, 345, white, white, black) if self.model.data[row_click][22] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][22], 139, 345, white, white, black) if self.model.data[__row_click__][22] else self.do_lable(
             "Не указано", 139, 345, white, white, black)
 
         ctk.CTkFrame(self, width=400, height=90,
@@ -465,26 +465,26 @@ class WindowInformation(ctk.CTkToplevel):
         ctk.CTkLabel(master=self, text="Миграционная карта", bg_color=blue,
                       fg_color=blue, text_color=white, font=my_font).place(x=10, y=380)
         self.do_lable("Серия", 10, 410, blue, blue, white)
-        self.do_lable(self.model.data[row_click][23], 13, 430, blue, white, blue) if self.model.data[row_click][23] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][23], 13, 430, blue, white, blue) if self.model.data[__row_click__][23] else self.do_lable(
             "Не указано", 13, 430, blue, white, blue)
         self.do_lable("Номер", 100, 410, blue, blue, white)
-        self.do_lable(self.model.data[row_click][24], 103, 430, blue, white, blue) if self.model.data[row_click][24] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][24], 103, 430, blue, white, blue) if self.model.data[__row_click__][24] else self.do_lable(
             "Не указано", 103, 430, blue, white, blue)
 
         ctk.CTkFrame(self, width=400, height=90,
                       fg_color=blue).place(x=425, y=375)
         ctk.CTkLabel(master=self, text="Общежитие", bg_color=blue,
                       fg_color=blue, text_color=white, font=my_font).place(x=430, y=380)
-        num = self.model.data[row_click][25]
+        num = self.model.data[__row_click__][25]
         self.do_lable("Номер корпуса", 435, 410, blue, blue, white)
-        self.do_lable(num[0], 470, 430, blue, white, blue) if self.model.data[row_click][25] else self.do_lable(
+        self.do_lable(num[0], 470, 430, blue, white, blue) if self.model.data[__row_click__][25] else self.do_lable(
             "Не указано", 470, 430, blue, white, blue)
         self.do_lable("Дата начала договора",
                             535, 410, blue, blue, white)
-        self.do_lable(self.model.data[row_click][26], 565, 430, blue, white, blue) if self.model.data[row_click][26] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][26], 565, 430, blue, white, blue) if self.model.data[__row_click__][26] else self.do_lable(
             "Не указано", 565, 430, blue, white, blue)
         self.do_lable("Номер договора", 680, 410, blue, blue, white)
-        self.do_lable(self.model.data[row_click][27], 683, 430, blue, white, blue) if self.model.data[row_click][27] else self.do_lable(
+        self.do_lable(self.model.data[__row_click__][27], 683, 430, blue, white, blue) if self.model.data[__row_click__][27] else self.do_lable(
             "Не указано", 683, 430, blue, white, blue)
 
         # Создание кнопки "Сформировать"
@@ -533,7 +533,7 @@ class WindowSaveExcel(ctk.CTkToplevel):
         self.entry_name_file = ctk.CTkEntry(
             master=self.frame_name_file, width=150)
         self.entry_name_file.insert(
-            0, f"{self.model.data[row_click][1]} {self.model.data[row_click][3]}")
+            0, f"{self.model.data[__row_click__][1]} {self.model.data[__row_click__][3]}")
 
         self.entry_name_file.grid(row=0, column=1, pady=7)
 
@@ -552,7 +552,7 @@ class WindowSaveExcel(ctk.CTkToplevel):
         self.wait_window()
 
     def click_save(self):
-        self.model.completion_excel(self.entry_name_file.get(), row_click)
+        self.model.completion_excel(self.entry_name_file.get(), __row_click__)
         self.destroy()
 
 
@@ -593,7 +593,7 @@ class WindowSaveWord(ctk.CTkToplevel):
         self.entry_name_file = ctk.CTkEntry(
             master=self, width=300)
         self.entry_name_file.insert(
-            0, f"Уведомление {self.model.data[row_click][1]} {self.model.data[row_click][3]}")
+            0, f"Уведомление {self.model.data[__row_click__][1]} {self.model.data[__row_click__][3]}")
         self.entry_name_file.place(x=30, y=200)
 
         # Создание кнопки "Сохранить"
@@ -618,7 +618,7 @@ class WindowSaveWord(ctk.CTkToplevel):
             check = 2
         if self.var_check_3.get() == True:
             check = 3
-        self.model.complection_word(self.entry_name_file.get(), row_click, check)
+        self.model.complection_word(self.entry_name_file.get(), __row_click__, check)
         self.destroy()
 
 
