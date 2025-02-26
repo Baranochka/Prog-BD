@@ -68,7 +68,7 @@ class Model():
         path_file = os.path.join(path_progs, f"config\\{filename}")
         return path_file
 
-    def connect_db(self) -> None:    
+    def connect_db(self) -> None:
         self.db = MSSQL(self.DRIVER, self.SERVER_NAME, self.DATABASE_NAME, self.USERNAME, self.PASSWORD)
 
     def is_connect(self) -> bool:

@@ -83,7 +83,7 @@ class WindowAuthorizationConnectionBD(ctk.CTkToplevel):
         self.model.USERNAME = self.entry_login.get()
         self.model.PASSWORD = self.entry_password.get()
         self.model.connect_db()
-        if self.model.is_connect:
+        if self.model.is_connect():
             self.frame_correct.pack(expand=True, fill=ctk.BOTH)
             self.after(1000, self.hide_correct_frame)
         else:
