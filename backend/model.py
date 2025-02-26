@@ -30,7 +30,7 @@ class Model():
         self.PASSWORD = None
         self.parse_config()
         View(self, version)
-    
+
     def parse_config(self) -> None:
         self.path_jpg = self.get_resource_path("image.jpg")
         self.path_ico = self.get_resource_path("icon.ico")
@@ -59,7 +59,7 @@ class Model():
         self.DATABASE_NAME = config["Test_Maks"]["DATABASE_NAME"]
         self.USERNAME = None
         self.PASSWORD = None
-    
+
     def get_resource_path(self, filename: str) -> str:
         path_progs = Path(__file__).parent
         """Возвращает корректный путь к файлу, работает и в `.exe`, и в обычном запуске Python"""
@@ -67,27 +67,24 @@ class Model():
             return os.path.join(sys._MEIPASS, filename)
         path_file = os.path.join(path_progs, f"config\\{filename}")
         return path_file
-    
+
     def connect_db(self) -> None:    
         self.db = MSSQL(self.DRIVER, self.SERVER_NAME, self.DATABASE_NAME, self.USERNAME, self.PASSWORD)
-        
+
     def is_connect(self) -> bool:
         if self.db.is_connected:
             return True
         else:
             return False
-    
+
     def find_in_db(self, surname, name, och, birthdate) -> None:
         self.data = self.db.get_person(surname, name, och, birthdate)
-        
-        
+
     def is_data(self) -> bool:
         if not self.self.data:
             return True
         else:
             return False
-   
-
 
     def completion_excel(self, file_out: str, row: int) -> None:
         
@@ -406,7 +403,6 @@ class Model():
         wb.save(output_path)
         os.startfile(output_path)
 
-
     def complection_word(self, file_out: str, row: int, check: int) -> None:
         
         doc = Document(self.path_doc)
@@ -512,7 +508,6 @@ class Model():
         doc.save(output_path)
         os.startfile(output_path)
 
-
 def change_sheet(
                 sheet, 
                 row: int, 
@@ -527,7 +522,6 @@ def change_sheet(
         if col_cur <= max_col:
             sheet.cell(row=row_cur, column=col_cur, value=val)
             col_cur += step
-            
 
 def UpdateWord(
                     doc, 
@@ -568,4 +562,3 @@ def UpdateWord(
                     print(f"Invalid row or cell index: ({row_index}, {cell_index})")
             except IndexError as e:
                 print(f"Error accessing table: {e}")
-        
