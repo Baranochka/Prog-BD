@@ -890,17 +890,17 @@ def CompletionExcel(file_out):
         street = "".join(re.findall(pattern_street, data[row_click][42]))
         change_sheet(sheet, 89, 2, 4, street, 122)
         dom = "".join(re.findall(pattern_dom, data[row_click][42]))
-        sheet.cell(row=91, column=2, value = f"ДОМ {dom.replace("Д. ","")}")
+        sheet.cell(row=91, column=2, value = f"ДОМ {dom.replace('Д. ','')}")
         korp = "".join(re.findall(pattern_korp, data[row_click][42]))
         str_ = "".join(re.findall(pattern_str, data[row_click][42]))
         if korp:
-            sheet.cell(row=91, column=46, value = f"КОРПУС {korp.replace("КОРП. ","")}")
+            sheet.cell(row=91, column=46, value = f"КОРПУС {korp.replace('КОРП. ','')}")
         elif str_:  
-            sheet.cell(row=91, column=46, value = f"СТРОЕНИЕ {str_.replace("СТР. ","")}")
+            sheet.cell(row=91, column=46, value = f"СТРОЕНИЕ {str_.replace('СТР. ','')}")
         kv = "".join(re.findall(pattern_kv, data[row_click][42]))
         if kv:
             
-            sheet.cell(row=93, column=2, value = f"КВАРТИРА {kv.replace("КВ. ","")}")
+            sheet.cell(row=93, column=2, value = f"КВАРТИРА {kv.replace('КВ. ','')}")
 
     # Сохранение изменений
     if os.path.isdir(".\\out"):

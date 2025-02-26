@@ -55,7 +55,7 @@ class MSSQL(Database):
     def is_connected(self) -> bool:
         return self.cond_conn
     
-    def get_all_rows(self) -> Optional[list[Row]]:
+    def get_all_rows(self) -> Optional[List[Row]]:
         try:
             self._cursor.execute("SELECT * FROM persons")
             result = self._cursor.fetchall()
@@ -196,7 +196,7 @@ class MSSQL(Database):
     def check_rus_eng(self,text) -> bool: 
         return bool(re.search(r'[а-яА-ЯёЁ]', text))
         
-    def read_rows_by_id(self, ids: int) -> list[Row]:
+    def read_rows_by_id(self, ids: int) -> List[Row]:
         ...
 
     def read_row_by_surname(self, surname: str) -> Optional[Row]:
