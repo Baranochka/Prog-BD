@@ -49,12 +49,11 @@ class MSSQL(Database):
         except Exception as e:
             self.cond_conn = False
             self.__debug(e)
-            
 
     @property
     def is_connected(self) -> bool:
         return self.cond_conn
-    
+
     def get_all_rows(self) -> Optional[List[Row]]:
         try:
             self._cursor.execute("SELECT * FROM persons")
@@ -122,80 +121,81 @@ class MSSQL(Database):
                    och: Optional[str],
                    birthdate: Optional[datetime]) -> Optional[List[List[str]]]:
         # try:
-            # Начинаем с базового запроса
-            query = "SELECT fru, last_lat, name_rus, nla, och, oche, ctz1, dob, " \
-                    "sex, pob, cob, pas_ser, pas_num, pds, pde, visa_priz, vis_ser, vis_num, " \
-                    "d_poluch, vis_end, tel_nom, d_enter, date_okon, mcs, mcn, k, " \
-                    "dnd, dog_obsh, rf, rfd, mot, ser, nmr, vis_krat, vis_id, gos_nap, " \
-                    "kont_start, kontrakt, kont_start, kont_end, gos_start, gos_end, star " \
-                    "FROM persons"
+        # Начинаем с базового запроса
+        query = "SELECT fru, last_lat, name_rus, nla, och, oche, ctz1, dob, " \
+                "sex, pob, cob, pas_ser, pas_num, pds, pde, visa_priz, vis_ser, vis_num, " \
+                "d_poluch, vis_end, tel_nom, d_enter, date_okon, mcs, mcn, k, " \
+                "dnd, dog_obsh, rf, rfd, mot, ser, nmr, vis_krat, vis_id, gos_nap, " \
+                "kont_start, kontrakt, kont_start, kont_end, gos_start, gos_end, star " \
+                "FROM persons"
 
-            # Список условий и параметров
-            conditions = []
-            parameters = []
+        # Список условий и параметров
+        conditions = []
+        parameters = []
 
-            # Добавляем условия в зависимости от переданных аргументов
-            if surname is not None:
-                if self.check_rus_eng(surname):
-                    conditions.append("fru = ?")
-                    parameters.append(surname)
-                else:
-                    conditions.append("last_lat = ?")
-                    parameters.append(surname)
-            if name is not None:
-                if self.check_rus_eng(name):
-                    conditions.append("name_rus = ?")
-                    parameters.append(name)
-                else:
-                    conditions.append("nla = ?")
-                    parameters.append(name)
-            if och is not None:
-                if self.check_rus_eng(och):
-                    conditions.append("och = ?")
-                    parameters.append(och)
-                else:
-                    conditions.append("oche = ?")
-                    parameters.append(och)
-            if birthdate != datetime(1900, 1, 1):
-                conditions.append("dob = ?")
-                parameters.append(birthdate)
+        # Добавляем условия в зависимости от переданных аргументов
+        if surname is not None:
+            if self.check_rus_eng(surname):
+                conditions.append("fru = ?")
+                parameters.append(surname)
+            else:
+                conditions.append("last_lat = ?")
+                parameters.append(surname)
+        if name is not None:
+            if self.check_rus_eng(name):
+                conditions.append("name_rus = ?")
+                parameters.append(name)
+            else:
+                conditions.append("nla = ?")
+                parameters.append(name)
+        if och is not None:
+            if self.check_rus_eng(och):
+                conditions.append("och = ?")
+                parameters.append(och)
+            else:
+                conditions.append("oche = ?")
+                parameters.append(och)
+        if birthdate != datetime(1900, 1, 1):
+            conditions.append("dob = ?")
+            parameters.append(birthdate)
 
-            # Если есть условия, добавляем их к запросу
-            if conditions:
-                # query += " WHERE " + " OR ".join(conditions)
-                query += f" WHERE {' AND '.join(conditions)}"
+        # Если есть условия, добавляем их к запросу
+        if conditions:
+            # query += " WHERE " + " OR ".join(conditions)
+            query += f" WHERE {' AND '.join(conditions)}"
 
-            # debug(query)
+        # debug(query)
 
-            # Выполняем запрос
-            self._cursor.execute(query, parameters)
-            # self.__debug(f"DEBUG args = '{surname}' '{name}' '{och}' '{birthdate}'")
-            all_rows = self._cursor.fetchall()
-            new_all_rows = []
+        # Выполняем запрос
+        self._cursor.execute(query, parameters)
+        # self.__debug(f"DEBUG args = '{surname}' '{name}' '{och}' '{birthdate}'")
+        all_rows = self._cursor.fetchall()
+        new_all_rows = []
 
-            for row in all_rows:
-                list_row = []
-                for i, field in enumerate(row):
-                    if isinstance(field, datetime) or i in [7, 13, 14, 18, 19, 21, 22, 29, 30, 36, 38, 39, 40, 41]:
-                        if field is None:
-                            list_row.append("          ")
-                        else:
-                            date =  field.strftime("%d.%m.%Y")  # Форматируем
-                            list_row.append(date)
+        for row in all_rows:
+            list_row = []
+            for i, field in enumerate(row):
+                if isinstance(field, datetime) or i in [7, 13, 14, 18, 19, 21, 22, 29, 30, 36, 38, 39, 40, 41]:
+                    if field is None:
+                        list_row.append("          ")
                     else:
-                        list_row.append(str(field).strip() if field is not None else "")
-                if len(list_row[20]) == 11: # проверка номера на 11 символов
-                    list_row[20] = list_row[20][1:]
-                new_all_rows.append(list_row)
-            return new_all_rows
+                        date = field.strftime("%d.%m.%Y")  # Форматируем
+                        list_row.append(date)
+                else:
+                    list_row.append(str(field).strip()
+                                    if field is not None else "")
+            if len(list_row[20]) == 11:  # проверка номера на 11 символов
+                list_row[20] = list_row[20][1:]
+            new_all_rows.append(list_row)
+        return new_all_rows
 
         # except Exception as e:
-            # self.__debug(e)
-            # return None
+        # self.__debug(e)
+        # return None
 
-    def check_rus_eng(self,text) -> bool: 
+    def check_rus_eng(self, text) -> bool:
         return bool(re.search(r'[а-яА-ЯёЁ]', text))
-        
+
     def read_rows_by_id(self, ids: int) -> List[Row]:
         ...
 
@@ -221,22 +221,22 @@ if __name__ == "__main__":
     print(path)
     config.read(f"{path}\\config.ini")
 
-    DRIVER        = config["Test_Maks"]["DRIVER"]  
-    SERVER_NAME   = config["Test_Maks"]["SERVER_NAME"]  
-    DATABASE_NAME = config["Test_Maks"]["DATABASE_NAME"] 
-    USERNAME      = config["Test_Maks"]["USERNAME"]
-    PASSWORD      = config["Test_Maks"]["PASSWORD"]
+    DRIVER = config["Test_Maks"]["DRIVER"]
+    SERVER_NAME = config["Test_Maks"]["SERVER_NAME"]
+    DATABASE_NAME = config["Test_Maks"]["DATABASE_NAME"]
+    USERNAME = config["Test_Maks"]["USERNAME"]
+    PASSWORD = config["Test_Maks"]["PASSWORD"]
 
     db = MSSQL(DRIVER, SERVER_NAME, DATABASE_NAME, USERNAME, PASSWORD)
 
     all_rows = db.get_person("ХРАЙЗАТ", None, None, datetime(1900, 1, 1))
     debug(all_rows)
     col = ["fru", "last_lat", "name_rus", "nla", "och", "oche", "ctz1", "dob",
-                    "sex", "pob", "cob", "pas_ser", "pas_num", "pds", "pde", "visa_priz", "vis_sev", "vis_num",
-                    "d_poluch", "vis_endv", "vtel_nom", "d_enter", "date_okon", "mcs", "mcn", "k", 
-                    "dnd", "dog_obsh", "rf", "rfd", "motv", "ser", "nmr", "vis_krat", "vis_id", "gos_nap",
-                    "kont_start", "kontrakt", "kont_start", "kont_end", "gos_start", "gos_end", "star"]
-    i=0
+           "sex", "pob", "cob", "pas_ser", "pas_num", "pds", "pde", "visa_priz", "vis_sev", "vis_num",
+           "d_poluch", "vis_endv", "vtel_nom", "d_enter", "date_okon", "mcs", "mcn", "k",
+           "dnd", "dog_obsh", "rf", "rfd", "motv", "ser", "nmr", "vis_krat", "vis_id", "gos_nap",
+           "kont_start", "kontrakt", "kont_start", "kont_end", "gos_start", "gos_end", "star"]
+    i = 0
     for var, c in zip(all_rows[0], col):
         debug(f"{i}. {c}: {var}")
-        i+=1
+        i += 1
