@@ -40,11 +40,11 @@ class Model():
         config = ConfigParser()
         config.read(self.get_resource_path("config.ini"))
 
-        # self.DRIVER = config["SQL Server"]["DRIVER"]
-        # self.SERVER_NAME = config["SQL Server"]["SERVER_NAME"]
-        # self.DATABASE_NAME = config["SQL Server"]["DATABASE_NAME"]
-        # self.USERNAME = None
-        # self.PASSWORD = None
+        self.DRIVER = config["SQL Server"]["DRIVER"]
+        self.SERVER_NAME = config["SQL Server"]["SERVER_NAME"]
+        self.DATABASE_NAME = config["SQL Server"]["DATABASE_NAME"]
+        self.USERNAME = None
+        self.PASSWORD = None
 
 
         # self.DRIVER = config["Test"]["DRIVER"]
@@ -54,11 +54,11 @@ class Model():
         # self.PASSWORD      = None
 
 
-        self.DRIVER = config["Test_Maks"]["DRIVER"]
-        self.SERVER_NAME = config["Test_Maks"]["SERVER_NAME"]
-        self.DATABASE_NAME = config["Test_Maks"]["DATABASE_NAME"]
-        self.USERNAME = None
-        self.PASSWORD = None
+        # self.DRIVER = config["Test_Maks"]["DRIVER"]
+        # self.SERVER_NAME = config["Test_Maks"]["SERVER_NAME"]
+        # self.DATABASE_NAME = config["Test_Maks"]["DATABASE_NAME"]
+        # self.USERNAME = None
+        # self.PASSWORD = None
 
     def get_resource_path(self, filename: str) -> str:
         path_progs = Path(__file__).parent
