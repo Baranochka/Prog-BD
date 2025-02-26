@@ -161,3 +161,4 @@ cython_debug/
 /config
 backend/config.ini
 /out
+/backend/config
