@@ -1,15 +1,14 @@
-# Программа для работы с базой данных "Название" и последующего вывода в специальной форме в Exele
-# P.S. Извините за кринж
-
-__version__ = "v0.6"  # Надо менять версию после каждого изменения
+"""
+Программа для работы с базой данных "Название" и последующего вывода в специальной форме в Excel
+P.S. Извините за кринж
+"""
+__version__ = "v0.7"  # Надо менять версию после каждого изменения
 
 import os
 import sys
 import re
-import requests
 import openpyxl
-import subprocess
-import customtkinter as cstk
+import customtkinter as ctk
 from PIL import Image
 from tkinter import ttk
 from pathlib import Path
@@ -17,10 +16,9 @@ from docx import Document
 from backend import MSSQL
 from docx.shared import Pt
 from datetime import datetime
-from tkinter import messagebox
+from backend import UpdateApp
 from configparser import ConfigParser
 
-latest_version = None
 
 data = []
 # Создание объекта для работы с базой данных
@@ -28,15 +26,13 @@ db = None
 # Переменная для хранения строки таблицы, на которую нажали
 row_click = 0
 
-path = Path(__file__).parent
-
-
-def get_resource_path(filename):
+def get_resource_path(filename: str) -> str:
+    path_progs = Path(__file__).parent
     """Возвращает корректный путь к файлу, работает и в `.exe`, и в обычном запуске Python"""
     if getattr(sys, '_MEIPASS', False):  # Проверяем, запущен ли скрипт в режиме PyInstaller
         return os.path.join(sys._MEIPASS, filename)
-    p = os.path.join(path, f"config\\{filename}")
-    return p
+    path_file = os.path.join(path_progs, f"config\\{filename}")
+    return path_file
 
 
 jpg_path = get_resource_path("image.jpg")
@@ -48,11 +44,11 @@ doc_path = get_resource_path("sample.docx")
 config = ConfigParser()
 config.read(config_path)
 
-DRIVER = config["SQL Server"]["DRIVER"]
-SERVER_NAME = config["SQL Server"]["SERVER_NAME"]
-DATABASE_NAME = config["SQL Server"]["DATABASE_NAME"]
-USERNAME = None
-PASSWORD = None
+# DRIVER = config["SQL Server"]["DRIVER"]
+# SERVER_NAME = config["SQL Server"]["SERVER_NAME"]
+# DATABASE_NAME = config["SQL Server"]["DATABASE_NAME"]
+# USERNAME = None
+# PASSWORD = None
 
 
 # DRIVER = config["Test"]["DRIVER"]
@@ -62,15 +58,15 @@ PASSWORD = None
 # PASSWORD      = None
 
 
-# DRIVER        = config["Test_Maks"]["DRIVER"]
-# SERVER_NAME   = config["Test_Maks"]["SERVER_NAME"]
-# DATABASE_NAME = config["Test_Maks"]["DATABASE_NAME"]
-# USERNAME      = None
-# PASSWORD      = None
+DRIVER = config["Test_Maks"]["DRIVER"]
+SERVER_NAME = config["Test_Maks"]["SERVER_NAME"]
+DATABASE_NAME = config["Test_Maks"]["DATABASE_NAME"]
+USERNAME = None
+PASSWORD = None
 
 
-class WindowAuthorizationConnectionBD(cstk.CTkToplevel):
-    def __init__(self, parent):
+class WindowAuthorizationConnectionBD(ctk.CTkToplevel):
+    def __init__(self, parent: ctk.CTk):
         super().__init__(parent)
 
         self.parent = parent
@@ -80,42 +76,42 @@ class WindowAuthorizationConnectionBD(cstk.CTkToplevel):
         self.configure(fg_color="white")
         self.iconbitmap(ico_path)
 
-        self.frame_auth = cstk.CTkFrame(self, fg_color="white")
-        self.frame_auth.pack(expand=True, fill=cstk.BOTH)
-        cstk.CTkLabel(self.frame_auth, text="Авторизация",
+        self.frame_auth = ctk.CTkFrame(self, fg_color="white")
+        self.frame_auth.pack(expand=True, fill=ctk.BOTH)
+        ctk.CTkLabel(self.frame_auth, text="Авторизация",
                       bg_color="white", font=("Arial", 17)).place(x=100, y=10)
-        cstk.CTkLabel(self.frame_auth, text="Логин",
+        ctk.CTkLabel(self.frame_auth, text="Логин",
                       bg_color="white", height=15).place(x=130, y=40)
-        self.entry_login = cstk.CTkEntry(
+        self.entry_login = ctk.CTkEntry(
             self.frame_auth, width=180, justify="center")
 
         self.entry_login.place(x=60, y=60)
-        cstk.CTkLabel(self.frame_auth, text="Пароль",
+        ctk.CTkLabel(self.frame_auth, text="Пароль",
                       bg_color="white", height=10).place(x=126, y=90)
-        self.entry_password = cstk.CTkEntry(
+        self.entry_password = ctk.CTkEntry(
             self.frame_auth, width=180, justify="center")
 
         self.entry_password.place(x=60, y=110)
         self.entry_password.configure(show="*")
 
-        self.frame_incorrect = cstk.CTkFrame(self, fg_color="white")
+        self.frame_incorrect = ctk.CTkFrame(self, fg_color="white")
 
-        cstk.CTkLabel(self.frame_incorrect, text="Соединение не установлено",
+        ctk.CTkLabel(self.frame_incorrect, text="Соединение не установлено",
                       fg_color="white", text_color="red").place(x=75, y=75)
         self.frame_incorrect.pack_forget()
 
-        self.frame_correct = cstk.CTkFrame(self, fg_color="white")
+        self.frame_correct = ctk.CTkFrame(self, fg_color="white")
 
-        cstk.CTkLabel(self.frame_correct, text="Соединение установлено",
+        ctk.CTkLabel(self.frame_correct, text="Соединение установлено",
                       fg_color="white", text_color="green").place(x=75, y=75)
         self.frame_correct.pack_forget()
 
         self.entry_login.bind(
-            "<FocusIn>", lambda e: self.entry_login.delete(0, cstk.END))
+            "<FocusIn>", lambda e: self.entry_login.delete(0, ctk.END))
         self.entry_password.bind(
-            "<FocusIn>", lambda e: self.entry_password.delete(0, cstk.END))
+            "<FocusIn>", lambda e: self.entry_password.delete(0, ctk.END))
 
-        cstk.CTkButton(self.frame_auth, text="Подключиться",
+        ctk.CTkButton(self.frame_auth, text="Подключиться",
                        command=self.connect).place(x=80, y=150)
         # Перехватываем нажатие на крестик (закрытие окна)
         self.protocol("WM_DELETE_WINDOW", self.close_app)
@@ -132,28 +128,26 @@ class WindowAuthorizationConnectionBD(cstk.CTkToplevel):
         global db
         db = MSSQL(DRIVER, SERVER_NAME, DATABASE_NAME, USERNAME, PASSWORD)
         if db.is_connected == True:
-            self.frame_correct.pack(expand=True, fill=cstk.BOTH)
+            self.frame_correct.pack(expand=True, fill=ctk.BOTH)
             self.after(1000, self.hide_correct_frame)
 
         else:
-            self.frame_incorrect.pack(expand=True, fill=cstk.BOTH)
+            self.frame_incorrect.pack(expand=True, fill=ctk.BOTH)
             self.after(1000, self.hide_incorrect_frame)
 
     def hide_incorrect_frame(self):
         self.frame_incorrect.pack_forget()
-        self.frame_auth.pack(expand=True, fill=cstk.BOTH)
-        self.entry_login.delete(0, cstk.END)
-        self.entry_password.delete(0, cstk.END)
+        self.frame_auth.pack(expand=True, fill=ctk.BOTH)
+        self.entry_login.delete(0, ctk.END)
+        self.entry_password.delete(0, ctk.END)
 
     def hide_correct_frame(self):
 
         self.destroy()
         self.parent.deiconify()
 
-# Описание класса графической части программы
 
-
-class WindowProgramm(cstk.CTk):
+class WindowProgramm(ctk.CTk):
     # Инициализация окна программы и откликов в программе
     def __init__(window):
         super().__init__()
@@ -165,64 +159,64 @@ class WindowProgramm(cstk.CTk):
         window.iconbitmap(ico_path)
 
         # Создаём CTkLabel с изображением
-        my_image = cstk.CTkImage(
+        my_image = ctk.CTkImage(
             light_image=Image.open(jpg_path), size=(150, 100))
 
-        cstk.CTkLabel(window, image=my_image, text="").place(x=10, y=10)
+        ctk.CTkLabel(window, image=my_image, text="").place(x=10, y=10)
 
         """--------------------------------------------------ФИО---------------------------------------------------"""
 
         # Создание ярлыка и текстового поля для ввода фамилии
-        cstk.CTkLabel(master=window, text="Фамилия:",
+        ctk.CTkLabel(master=window, text="Фамилия:",
                       bg_color="white").place(x=20, y=150)
-        window.entry_familia = cstk.CTkEntry(master=window, width=250)
+        window.entry_familia = ctk.CTkEntry(master=window, width=250)
         window.entry_familia.place(x=90, y=150)
 
         # # Создание ярлыка и текстового поля для ввода имени
-        cstk.CTkLabel(master=window, text="Имя:",
+        ctk.CTkLabel(master=window, text="Имя:",
                       bg_color="white").place(x=20, y=180)
-        window.entry_name = cstk.CTkEntry(master=window, width=250)
+        window.entry_name = ctk.CTkEntry(master=window, width=250)
         window.entry_name.place(x=90, y=180)
 
         # # Создание ярлыка и текстового поля для ввода отчества
-        cstk.CTkLabel(master=window, text="Отчество:",
+        ctk.CTkLabel(master=window, text="Отчество:",
                       bg_color="white").place(x=20, y=210)
-        window.entry_otchestvo = cstk.CTkEntry(master=window, width=250)
+        window.entry_otchestvo = ctk.CTkEntry(master=window, width=250)
         window.entry_otchestvo.place(x=90, y=210)
 
         """---------------------------------------------------ДАТА--------------------------------------------------"""
 
         # Создание ярлыка даты рождения
-        cstk.CTkLabel(window, text="Дата рождения:",
+        ctk.CTkLabel(window, text="Дата рождения:",
                       bg_color="white").place(x=20, y=240)
 
         # Переменные для хранения значений даты рождения
-        window.day_var = cstk.StringVar(value="1")
-        window.month_var = cstk.StringVar(value="1")
-        window.year_var = cstk.StringVar(value="1900")
+        window.day_var = ctk.StringVar(value="1")
+        window.month_var = ctk.StringVar(value="1")
+        window.year_var = ctk.StringVar(value="1900")
 
         # CTkSpinbox для дня от 1 до 31
-        cstk.CTkEntry(master=window, textvariable=window.day_var,
+        ctk.CTkEntry(master=window, textvariable=window.day_var,
                       width=20).place(x=130, y=240)
 
         # CTkSpinbox для месяца от 1 до 12
-        cstk.CTkEntry(master=window, textvariable=window.month_var,
+        ctk.CTkEntry(master=window, textvariable=window.month_var,
                       width=20).place(x=160, y=240)
 
         # CTkSpinbox для года от 1900 до 2025
-        cstk.CTkEntry(master=window, textvariable=window.year_var,
+        ctk.CTkEntry(master=window, textvariable=window.year_var,
                       width=45).place(x=190, y=240)
 
         """---------------------------------------------------КНОПКА-ПОИСКА--------------------------------------------------------------"""
 
         # Создание кнопки "Поиск"
-        cstk.CTkButton(window, text="Поиск",
+        ctk.CTkButton(window, text="Поиск",
                        command=window.click_find).place(x=450, y=240)
 
         """------------------------------------------------------ТАБЛИЦА-------------------------------------------------------------"""
 
         # Создание контейнера для таблицы (изначально скрыт)
-        window.frame_table = cstk.CTkFrame(
+        window.frame_table = ctk.CTkFrame(
             window, fg_color="white", width=1000, height=310)
 
         # Отключение видимости таблицы
@@ -282,12 +276,12 @@ class WindowProgramm(cstk.CTk):
             window.tree.column(col, anchor="center", stretch=True, width=300)
 
         # Создание пролистывания по таблице
-        scrollbar_y = cstk.CTkScrollbar(
+        scrollbar_y = ctk.CTkScrollbar(
             window.frame_table, width=15, height=50)
         scrollbar_y.place(x=985, y=0)
         window.tree.configure(yscrollcommand=scrollbar_y.set)
 
-        # scrollbar_x = cstk.CTkScrollbar(window.frame_table, width=15, height=15)
+        # scrollbar_x = ctk.CTkScrollbar(window.frame_table, width=15, height=15)
         # scrollbar_x.place(x=0, y=295)
         # window.tree.configure(xscrollcommand=scrollbar_x.set)
 
@@ -296,25 +290,25 @@ class WindowProgramm(cstk.CTk):
         """--------------------------------------------------------ОШИБКА-ОТСУТСТВИЯ-ДАННЫХ-----------------------------------------------------------"""
 
         # Создание контейнера для ошибки при отсутствии вводных данных
-        window.frame_false = cstk.CTkFrame(window, fg_color="white")
+        window.frame_false = ctk.CTkFrame(window, fg_color="white")
 
         # Отключение видимости ошибки
         window.frame_false.pack_forget()
 
         # Создание ярлыка отсутствия галочек
-        cstk.CTkLabel(master=window.frame_false, text="Введите данные",
+        ctk.CTkLabel(master=window.frame_false, text="Введите данные",
                       fg_color="white", text_color="red").pack(side="top")
 
         """--------------------------------------------------------ОШИБКА-ОТСУТСТВИЯ-СТУДЕНТОВ-----------------------------------------------------------"""
 
         # Создание контейнера для ошибки при отсутствии студентов
-        window.frame_false_stud = cstk.CTkFrame(window, fg_color="white")
+        window.frame_false_stud = ctk.CTkFrame(window, fg_color="white")
 
         # Отключение видимости ошибки
         window.frame_false_stud.pack_forget()
 
         # Создание ярлыка отсутствия галочек
-        cstk.CTkLabel(master=window.frame_false_stud, text="Студент(ы) не найден(ы)",
+        ctk.CTkLabel(master=window.frame_false_stud, text="Студент(ы) не найден(ы)",
                       fg_color="white", text_color="red").pack(side="top")
 
         """-------------------------------------------------------ОТКЛИК-НА-ТАБЛИЦУ----------------------------------------------------------"""
@@ -363,7 +357,7 @@ class WindowProgramm(cstk.CTk):
             window.frame_false_stud.place(x=440, y=290)
         else:
             for i, var in enumerate(data):
-                window.tree.insert("", cstk.END, iid=f"I00{i}", values=var)
+                window.tree.insert("", ctk.END, iid=f"I00{i}", values=var)
             window.frame_table.place(x=0, y=290)
 
     # Реализация изменения в таблице
@@ -374,7 +368,7 @@ class WindowProgramm(cstk.CTk):
         WindowInformation(window)
 
 
-class WindowInformation(cstk.CTkToplevel):
+class WindowInformation(ctk.CTkToplevel):
 
     def __init__(window_inf, parent):
         super().__init__(parent)
@@ -386,9 +380,9 @@ class WindowInformation(cstk.CTkToplevel):
         blue = "#6699CC"
         white = "white"
         black = "black"
-        my_font = cstk.CTkFont(family="Arial", size=16)
+        my_font = ctk.CTkFont(family="Arial", size=16)
 
-        cstk.CTkFrame(window_inf, width=890, height=90,
+        ctk.CTkFrame(window_inf, width=890, height=90,
                       fg_color=blue).place(x=5, y=5)
         window_inf.do_lable("Фамилия:", 10, 10, blue, blue, white)
         window_inf.do_lable(data[row_click][0], 80, 10, blue, blue, white) if data[row_click][0] else window_inf.do_lable(
@@ -420,7 +414,7 @@ class WindowInformation(cstk.CTkToplevel):
         window_inf.do_lable(f"+7{data[row_click][20]}", 350, 100, white, white,
                             black) if data[row_click][20] else window_inf.do_lable("Не указано", 350, 100, white, white, black)
 
-        cstk.CTkFrame(window_inf, width=400, height=95,
+        ctk.CTkFrame(window_inf, width=400, height=95,
                       fg_color=blue).place(x=5, y=125)
         window_inf.do_lable("Гражданство:", 10, 130, blue, blue, white)
         window_inf.do_lable(data[row_click][6], 100, 130, blue, blue, white) if data[row_click][6] else window_inf.do_lable(
@@ -433,9 +427,9 @@ class WindowInformation(cstk.CTkToplevel):
         window_inf.do_lable(data[row_click][10], 120, 190, blue, blue, white) if data[row_click][10] else window_inf.do_lable(
             "Не указано", 120, 190, blue, blue, white)
 
-        cstk.CTkFrame(window_inf, width=400, height=90,
+        ctk.CTkFrame(window_inf, width=400, height=90,
                       fg_color=blue).place(x=5, y=230)
-        cstk.CTkLabel(master=window_inf, text="Паспортные данные", bg_color=blue,
+        ctk.CTkLabel(master=window_inf, text="Паспортные данные", bg_color=blue,
                       fg_color=blue, text_color=white, font=my_font).place(x=10, y=235)
 
         window_inf.do_lable("Серия", 10, 265, blue, blue, white)
@@ -452,9 +446,9 @@ class WindowInformation(cstk.CTkToplevel):
             "Не указано", 303, 285, blue, white, blue)
 
         if data[row_click][28] == "нет":
-            cstk.CTkFrame(window_inf, width=400, height=90,
+            ctk.CTkFrame(window_inf, width=400, height=90,
                           fg_color=blue).place(x=425, y=230)
-            cstk.CTkLabel(master=window_inf, text="Виза", bg_color=blue,
+            ctk.CTkLabel(master=window_inf, text="Виза", bg_color=blue,
                           fg_color=blue, text_color=white, font=my_font).place(x=430, y=235)
             window_inf.do_lable("Серия", 430, 265, blue, blue, white)
             window_inf.do_lable(data[row_click][16], 433, 285, blue, white, blue) if data[row_click][16] else window_inf.do_lable(
@@ -469,9 +463,9 @@ class WindowInformation(cstk.CTkToplevel):
             window_inf.do_lable(data[row_click][19], 733, 285, blue, white, blue) if data[row_click][19] else window_inf.do_lable(
                 "Не указано", 733, 285, blue, white, blue)
         elif data[row_click][28] == "ВНЖ":
-            cstk.CTkFrame(window_inf, width=400, height=90,
+            ctk.CTkFrame(window_inf, width=400, height=90,
                           fg_color=blue).place(x=425, y=230)
-            cstk.CTkLabel(master=window_inf, text="ВНЖ", bg_color=blue,
+            ctk.CTkLabel(master=window_inf, text="ВНЖ", bg_color=blue,
                           fg_color=blue, text_color=white, font=my_font).place(x=430, y=235)
             window_inf.do_lable("Серия", 430, 265, blue, blue, white)
             window_inf.do_lable(data[row_click][31], 433, 285, blue, white, blue) if data[row_click][31] else window_inf.do_lable(
@@ -486,9 +480,9 @@ class WindowInformation(cstk.CTkToplevel):
             window_inf.do_lable(data[row_click][30], 733, 285, blue, white, blue) if data[row_click][30] else window_inf.do_lable(
                 "Не указано", 733, 285, blue, white, blue)
         elif data[row_click][28] == "РВПО":
-            cstk.CTkFrame(window_inf, width=400, height=90,
+            ctk.CTkFrame(window_inf, width=400, height=90,
                           fg_color=blue).place(x=425, y=230)
-            cstk.CTkLabel(master=window_inf, text="РВПО", bg_color=blue,
+            ctk.CTkLabel(master=window_inf, text="РВПО", bg_color=blue,
                           fg_color=blue, text_color=white, font=my_font).place(x=430, y=235)
             window_inf.do_lable("Серия", 430, 265, blue, blue, white)
             window_inf.do_lable(data[row_click][31], 433, 285, blue, white, blue) if data[row_click][31] else window_inf.do_lable(
@@ -511,9 +505,9 @@ class WindowInformation(cstk.CTkToplevel):
         window_inf.do_lable(data[row_click][22], 139, 345, white, white, black) if data[row_click][22] else window_inf.do_lable(
             "Не указано", 139, 345, white, white, black)
 
-        cstk.CTkFrame(window_inf, width=400, height=90,
+        ctk.CTkFrame(window_inf, width=400, height=90,
                       fg_color=blue).place(x=5, y=375)
-        cstk.CTkLabel(master=window_inf, text="Миграционная карта", bg_color=blue,
+        ctk.CTkLabel(master=window_inf, text="Миграционная карта", bg_color=blue,
                       fg_color=blue, text_color=white, font=my_font).place(x=10, y=380)
         window_inf.do_lable("Серия", 10, 410, blue, blue, white)
         window_inf.do_lable(data[row_click][23], 13, 430, blue, white, blue) if data[row_click][23] else window_inf.do_lable(
@@ -522,9 +516,9 @@ class WindowInformation(cstk.CTkToplevel):
         window_inf.do_lable(data[row_click][24], 103, 430, blue, white, blue) if data[row_click][24] else window_inf.do_lable(
             "Не указано", 103, 430, blue, white, blue)
 
-        cstk.CTkFrame(window_inf, width=400, height=90,
+        ctk.CTkFrame(window_inf, width=400, height=90,
                       fg_color=blue).place(x=425, y=375)
-        cstk.CTkLabel(master=window_inf, text="Общежитие", bg_color=blue,
+        ctk.CTkLabel(master=window_inf, text="Общежитие", bg_color=blue,
                       fg_color=blue, text_color=white, font=my_font).place(x=430, y=380)
         num = data[row_click][25]
         window_inf.do_lable("Номер корпуса", 435, 410, blue, blue, white)
@@ -539,9 +533,9 @@ class WindowInformation(cstk.CTkToplevel):
             "Не указано", 683, 430, blue, white, blue)
 
         # Создание кнопки "Сформировать"
-        cstk.CTkButton(window_inf, text="Сформировать в Excel", text_color=white,
+        ctk.CTkButton(window_inf, text="Сформировать в Excel", text_color=white,
                        fg_color=blue, command=window_inf.click_form_excel).place(x=740, y=500)
-        cstk.CTkButton(window_inf, text="Сформировать уведомление", text_color=white,
+        ctk.CTkButton(window_inf, text="Сформировать уведомление", text_color=white,
                        fg_color=blue, command=window_inf.click_form_Word).place(x=540, y=500)
 
         # Фиксация окна
@@ -550,7 +544,7 @@ class WindowInformation(cstk.CTkToplevel):
         window_inf.wait_window()
 
     def do_lable(window_inf, text, x, y, bg_color, fg_color, text_color):
-        cstk.CTkLabel(master=window_inf, text=text, height=10, fg_color=fg_color,
+        ctk.CTkLabel(master=window_inf, text=text, height=10, fg_color=fg_color,
                       bg_color=bg_color, text_color=text_color).place(x=x, y=y)
 
     def click_form_excel(window_inf):
@@ -560,7 +554,7 @@ class WindowInformation(cstk.CTkToplevel):
         WindowSaveWord(window_inf)
 
 
-class WindowSaveExcel(cstk.CTkToplevel):
+class WindowSaveExcel(ctk.CTkToplevel):
     def __init__(window_save, parent):
         super().__init__(parent)
         # Описание окна
@@ -569,18 +563,18 @@ class WindowSaveExcel(cstk.CTkToplevel):
         window_save.configure(fg_color="white")
         window_save.iconbitmap(ico_path)
         # Создание ярлыка сохранения
-        cstk.CTkLabel(master=window_save, text="Сохранение", fg_color="white",
+        ctk.CTkLabel(master=window_save, text="Сохранение", fg_color="white",
                       text_color="black", font=("Arial", 16)).pack(side="top", padx=7)
 
         # Создание контейнера для названия файла
-        window_save.frame_name_file = cstk.CTkFrame(
+        window_save.frame_name_file = ctk.CTkFrame(
             window_save, fg_color="white")
-        window_save.frame_name_file.pack(fill=cstk.X)
+        window_save.frame_name_file.pack(fill=ctk.X)
 
         # Создание ярлыка и текстового поля для ввода названия файла
-        cstk.CTkLabel(master=window_save.frame_name_file, text="Название файла:",
+        ctk.CTkLabel(master=window_save.frame_name_file, text="Название файла:",
                       fg_color="white", text_color="black").grid(row=0, column=0, padx=7)
-        window_save.entry_name_file = cstk.CTkEntry(
+        window_save.entry_name_file = ctk.CTkEntry(
             master=window_save.frame_name_file, width=150)
         window_save.entry_name_file.insert(
             0, f"{data[row_click][1]} {data[row_click][3]}")
@@ -588,7 +582,7 @@ class WindowSaveExcel(cstk.CTkToplevel):
         window_save.entry_name_file.grid(row=0, column=1, pady=7)
 
         # Создание кнопки "Сохранить"
-        window_save.search_button = cstk.CTkButton(
+        window_save.search_button = ctk.CTkButton(
             window_save, text="Сохранить", command=window_save.click_save)
         window_save.search_button.pack(side="right", padx=5)
 
@@ -606,7 +600,7 @@ class WindowSaveExcel(cstk.CTkToplevel):
         window_save.destroy()
 
 
-class WindowSaveWord(cstk.CTkToplevel):
+class WindowSaveWord(ctk.CTkToplevel):
     def __init__(window_save, parent):
         super().__init__(parent)
         # Описание окна
@@ -615,38 +609,38 @@ class WindowSaveWord(cstk.CTkToplevel):
         window_save.configure(fg_color="white")
         window_save.iconbitmap(ico_path)
         # Создание ярлыка сохранения
-        cstk.CTkLabel(master=window_save, text="Сохранение", fg_color="white",
+        ctk.CTkLabel(master=window_save, text="Сохранение", fg_color="white",
                       text_color="white", font=("Arial", 16)).place(x=210, y=10)
 
-        window_save.var_check_1 = cstk.BooleanVar()
-        window_save.var_check_2 = cstk.BooleanVar()
-        window_save.var_check_3 = cstk.BooleanVar()
+        window_save.var_check_1 = ctk.BooleanVar()
+        window_save.var_check_2 = ctk.BooleanVar()
+        window_save.var_check_3 = ctk.BooleanVar()
 
         # # Создание галочек
-        cstk.CTkCheckBox(window_save, variable=window_save.var_check_1,
+        ctk.CTkCheckBox(window_save, variable=window_save.var_check_1,
                          bg_color="white").place(x=10, y=50)
-        cstk.CTkLabel(master=window_save, text="о предоставлении иностранному гражданину (лицу без гражданства)\n"
+        ctk.CTkLabel(master=window_save, text="о предоставлении иностранному гражданину (лицу без гражданства)\n"
                       "академического отпуска образовательной/научной организации;", bg_color="white").place(x=40, y=50)
-        cstk.CTkCheckBox(window_save, variable=window_save.var_check_2,
+        ctk.CTkCheckBox(window_save, variable=window_save.var_check_2,
                          bg_color="white").place(x=10, y=90)
-        cstk.CTkLabel(master=window_save, text="о досрочном прекращении обучения иностранного гражданина\n"
+        ctk.CTkLabel(master=window_save, text="о досрочном прекращении обучения иностранного гражданина\n"
                       "(лица без гражданства) в образовательной/научной организации;", bg_color="white").place(x=40, y=90)
-        cstk.CTkCheckBox(window_save, variable=window_save.var_check_3,
+        ctk.CTkCheckBox(window_save, variable=window_save.var_check_3,
                          bg_color="white").place(x=10, y=130)
-        cstk.CTkLabel(master=window_save, text="о завершении обучения иностранного гражданина (лица без гражданства)\n"
+        ctk.CTkLabel(master=window_save, text="о завершении обучения иностранного гражданина (лица без гражданства)\n"
                       "(лица без гражданства) в образовательной/научной организации;", bg_color="white").place(x=40, y=130)
 
         # Создание ярлыка и текстового поля для ввода названия файла
-        cstk.CTkLabel(master=window_save, text="Название файла:",
+        ctk.CTkLabel(master=window_save, text="Название файла:",
                       bg_color="white").place(x=30, y=180)
-        window_save.entry_name_file = cstk.CTkEntry(
+        window_save.entry_name_file = ctk.CTkEntry(
             master=window_save, width=300)
         window_save.entry_name_file.insert(
             0, f"Уведомление {data[row_click][1]} {data[row_click][3]}")
         window_save.entry_name_file.place(x=30, y=200)
 
         # Создание кнопки "Сохранить"
-        window_save.search_button = cstk.CTkButton(
+        window_save.search_button = ctk.CTkButton(
             window_save, text="Сохранить", command=window_save.click_save)
         window_save.search_button.place(x=350, y=199)
 
@@ -665,23 +659,33 @@ class WindowSaveWord(cstk.CTkToplevel):
 
 
 # Функция центрирования окна
-def center_window(window, width, height):
+def center_window(
+                self, 
+                width: int, 
+                height: int
+) -> None:
 
     # Получаем размеры экрана
-    screen_width = window.winfo_screenwidth()
-    screen_height = window.winfo_screenheight()
+    screen_width = self.winfo_screenwidth()
+    screen_height = self.winfo_screenheight()
 
     # Вычисляем координаты верхнего левого угла
     x = (screen_width - width) // 2
     y = (screen_height - height) // 2
 
     # Устанавливаем размеры и положение окна
-    window.geometry(f"{width}x{height}+{x}+{y}")
+    self.geometry(f"{width}x{height}+{x}+{y}")
+
 
 # Функция Заполнения Excel-таблицы
-
-
-def change_sheet(sheet, row, col, step, value, max_col):
+def change_sheet(
+                sheet, 
+                row: int, 
+                col: int, 
+                step: int, 
+                value: str | None, 
+                max_col: int
+) -> None:
     col_cur = col
     row_cur = row
     for val in value:
@@ -689,12 +693,8 @@ def change_sheet(sheet, row, col, step, value, max_col):
             sheet.cell(row=row_cur, column=col_cur, value=val)
             col_cur += step
 
-# Функция сохранения Excel-таблицы
 
-
-def CompletionExcel(file_out):
-    # Путь к файлу
-
+def CompletionExcel(file_out: str) -> None:
     # Загрузка книги
     wb = openpyxl.load_workbook(excle_path)
     # Работаем с активным листом (если нужен другой, уточните)
@@ -1010,7 +1010,7 @@ def CompletionExcel(file_out):
     os.startfile(output_path)
 
 
-def ComplectionWord(file_out, window_save):
+def ComplectionWord(file_out: str, window_save: ctk.CTkToplevel) -> None:
     print(doc_path)
     doc = Document(doc_path)
     if window_save.var_check_1.get() == True:
@@ -1116,7 +1116,15 @@ def ComplectionWord(file_out, window_save):
     os.startfile(output_path)
 
 
-def UpdateWord(doc, table_index, row_index, cell_index, new_text, font_size=12, uppercase=True):
+def UpdateWord(
+                doc, 
+                table_index: int, 
+                row_index: int, 
+                cell_index: int, 
+                new_text: str, 
+                font_size = 12 , 
+                uppercase = True
+) -> None:
     """ Обновляет текст в ячейке таблицы, добавляя жирность и изменение регистра """
     try:
         table = doc.tables[table_index]
@@ -1149,82 +1157,16 @@ def UpdateWord(doc, table_index, row_index, cell_index, new_text, font_size=12, 
         print(f"Error accessing table: {e}")
 
 
-def CheckUpdate():
-    url = "https://api.github.com/repos/Baranochka/Prog-BD/releases/latest"
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            latest_release = response.json()
-            global latest_version
-            latest_version = latest_release['tag_name']
-            if latest_version != __version__:
-                return True
-            else:
-                return False
-    except:
-        return False
-
-
-def Update():
-    url = f"https://github.com/Baranochka/Prog-BD/releases/download/{latest_version}/Program.BD.exe"
-    cur_path_exe = os.path.dirname(sys.executable)
-    save_path = os.path.join(cur_path_exe, 'update\\Program BD.exe')
-    response = requests.get(url, stream=True)
-    if response.status_code == 200:
-        if os.path.isdir(".\\update"):
-            pass
-        else:
-            os.mkdir(f".\\update")
-        with open(save_path, "wb") as file:
-            for chunk in response.iter_content(1024):
-                file.write(chunk)
-        if os.path.isfile(save_path):
-            UpdateSelf(save_path, cur_path_exe)
-    else:
-        return False
-
-
-def UpdateSelf(new_exe_path, cur_path_exe):
-
-    updater_script = "updater.bat"
-
-    with open(updater_script, "w") as f:
-        f.write(f"""
-        @echo off
-        setlocal
-        set EXE_NAME=Program BD.exe
-        set UPDATE_FOLDER=.\\update\\
-        set TARGET_FOLDER=.\\
-
-        :: Убиваем процесс, если он запущен
-        taskkill /F /IM %EXE_NAME% > nul 2>&1
-        
-        timeout /t 2 /nobreak > nul
-
-        copy "%UPDATE_FOLDER%%EXE_NAME%" 
-
-        rmdir /Q /S "%UPDATE_FOLDER%"
-
-        :: start "" "%TARGET_FOLDER%%EXE_NAME%"
-
-        cmd /c del "%~f0"
-        """)
-    try:
-        subprocess.Popen(updater_script, shell=True)
-        sys.exit()
-    except PermissionError as e:
-        print(f"PermissionError: {e}")
-        messagebox.showerror("Ошибка", f"Отказано в доступе: {e}")
+def start_app():
+    app = WindowProgramm()
+    app.withdraw()
+    UpdateApp(__version__)
+    WindowAuthorizationConnectionBD(app)
+    app.mainloop()
+    del app
 
 
 # Начало работы программы
 if __name__ == "__main__":
-    if CheckUpdate() == True:
-        if messagebox.askyesno("Обновление", "Доступно новое обновление. Хотите его установить?"):
-            Update()
 
-    app = WindowProgramm()
-    app.withdraw()  # Скрываем главное окно
-    WindowAuthorizationConnectionBD(app)  # Показываем окно перед основным
-    app.mainloop()
-    del app
+    start_app()
