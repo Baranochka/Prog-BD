@@ -76,44 +76,7 @@ class MSSQL(Database):
         except Exception as e:
             self.__debug(e)
             return None
-    # def get_person(self,
-    #                last_name: Optional[str],
-    #                first_name: Optional[str],
-    #                och: Optional[str],
-    #                birthday: Optional[datetime]) -> Optional[List[List[str]]]:
-    #     try:
-    #         self._cursor.execute(
-    #             "SELECT fru, last_lat, name_rus, nla, och, oche, pob ,dob, "
-    #             "sex, pob, cob, pas_ser, pas_num, pds, pde, vis_ser, vis_num, vis_start"
-    #             ", vis_end, tel_nom, d_enter, date_okon, mcs, mcn, obsch, d_naym, dog_obsh "
-    #             "FROM persons WHERE fru=? OR name_rus=? OR och=? OR dob=?",
-    #             (last_name, first_name, och, birthday))
-    #         self.__debug(last_name, first_name, och, birthday)
-    #         all_rows = self._cursor.fetchall()
-    #         new_all_rows = []
-    #         list_row = []
-    #
-    #         for row in all_rows:
-    #             self.__debug(row)
-    #             list_row = []
-    #             for field in row:
-    #                 if isinstance(field, datetime):
-    #                     # Преобразуем datetime в строку в нужном формате
-    #                     list_row.append(field.strftime("%d"))  # Пример формата
-    #                     list_row.append(field.strftime("%m"))
-    #                     list_row.append(field.strftime("%Y"))
-    #                 else:
-    #                     list_row.append(str(field).strip() if field is not None else "")
-    #             list_row[-2] = list_row[-2][-2:] # Замена 4-х значной даты с конца на 2 знака.
-    #             if len(list_row[29]) == 11:
-    #                 list_row[29] = list_row[29][1:]
-    #             new_all_rows.append(list_row)
-    #
-    #         return new_all_rows
-    #
-    #     except Exception as e:
-    #         self.__debug(e)
-    #         return None
+
 
     def get_person(self,
                    surname: Optional[str],
@@ -193,6 +156,98 @@ class MSSQL(Database):
         # self.__debug(e)
         # return None
 
+    def get_person_for_check(self,
+                   surname: Optional[str],
+                   name: Optional[str],
+                   och: Optional[str],
+                   birthdate: Optional[datetime]) -> Optional[List[List[str]]]:
+        # try:
+        # Начинаем с базового запроса
+        query = "SELECT fru, last_lat, name_rus, nla, dob, pas_ser, pas_num, pds " \
+                "FROM persons"
+
+        # Список условий и параметров
+        conditions = []
+        parameters = []
+
+        # Добавляем условия в зависимости от переданных аргументов
+        if surname is not None:
+            if self.check_rus_eng(surname):
+                conditions.append("fru = ?")
+                parameters.append(surname)
+            else:
+                conditions.append("last_lat = ?")
+                parameters.append(surname)
+        if name is not None:
+            if self.check_rus_eng(name):
+                conditions.append("name_rus = ?")
+                parameters.append(name)
+            else:
+                conditions.append("nla = ?")
+                parameters.append(name)
+        if och is not None:
+            if self.check_rus_eng(och):
+                conditions.append("och = ?")
+                parameters.append(och)
+            else:
+                conditions.append("oche = ?")
+                parameters.append(och)
+        if birthdate != datetime(1900, 1, 1):
+            conditions.append("dob = ?")
+            parameters.append(birthdate)
+
+        # Если есть условия, добавляем их к запросу
+        if conditions:
+            # query += " WHERE " + " OR ".join(conditions)
+            query += f" WHERE {' AND '.join(conditions)}"
+
+        # debug(query)
+
+        # Выполняем запрос
+        self._cursor.execute(query, parameters)
+        all_rows = self._cursor.fetchall()
+        new_all_rows = []
+
+        for row in all_rows:
+            list_row = []
+            for i, field in enumerate(row):
+                if isinstance(field, datetime) or i in [4, 7]:
+                    if field is None:
+                        list_row.append("          ")
+                    else:
+                        date = field.strftime("%d%m%Y")  # Форматируем
+                        list_row.append(date)
+                else:
+                    list_row.append(str(field).strip()
+                                    if field is not None else "")
+            new_all_rows.append(list_row)
+        return new_all_rows
+
+    def get_all_rows_for_check(self) -> Optional[List[Row]]:
+        try:
+            self._cursor.execute("SELECT fru, last_lat, name_rus, nla, dob, pas_ser, pas_num, pds FROM persons")
+            all_rows = self._cursor.fetchall()
+
+            new_all_rows = []
+
+            for row in all_rows:
+                list_row = []
+                for i, field in enumerate(row):
+                    if isinstance(field, datetime) or i in [4, 7]:
+                        if field is None:
+                            list_row.append("          ")
+                        else:
+                            date = field.strftime("%d%m%Y")  # Форматируем
+                            list_row.append(date)
+                    else:
+                        list_row.append(str(field).strip()
+                                        if field is not None else "")
+                new_all_rows.append(list_row)
+            return new_all_rows
+        except Exception as e:
+            self.__debug(e)
+            return None
+
     def check_rus_eng(self, text) -> bool:
         return bool(re.search(r'[а-яА-ЯёЁ]', text))
 
@@ -240,3 +295,5 @@ if __name__ == "__main__":
     for var, c in zip(all_rows[0], col):
         debug(f"{i}. {c}: {var}")
         i += 1
+    all_rows = db.get_person_for_check("ХРАЙЗАТ", None, None, datetime(1900, 1, 1))
+    debug(all_rows)

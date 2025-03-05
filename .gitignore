@@ -162,3 +162,5 @@ cython_debug/
 backend/config.ini
 /out
 /backend/config
+/out_check
+backend/config.7z

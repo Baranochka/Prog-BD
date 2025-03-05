@@ -5,6 +5,8 @@
 import os
 import re
 import sys
+import time
+import base64
 import openpyxl
 from .view import View
 from pathlib import Path
@@ -12,6 +14,13 @@ from docx import Document
 from docx.shared import Pt
 from backend.database import MSSQL
 from configparser import ConfigParser
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
+
 
 class Model():
     
@@ -28,6 +37,7 @@ class Model():
         self.DATABASE_NAME = None
         self.USERNAME = None
         self.PASSWORD = None
+        self.driver_browser = None
         self.parse_config()
         View(self, version)
 
@@ -85,6 +95,12 @@ class Model():
             return True
         else:
             return False
+
+    def find_in_db_for_check(self, surname, name, och, birthdate) -> None:
+        self.data = self.db.get_person_for_check(surname, name, och, birthdate)
+    
+    def find_in_db_all_rows_for_check(self) -> None:
+        self.data = self.db.get_all_rows_for_check()
 
     def completion_excel(self, file_out: str, row: int) -> None:
         
@@ -508,6 +524,96 @@ class Model():
         doc.save(output_path)
         os.startfile(output_path)
 
+    def check_on_gosuslugi(self, row: int) -> None:
+        if self.check_open_browser() == False:
+            self.open_browser()
+        # Задержка для загрузки страницы
+        time.sleep(3)
+
+        while True:
+            try:
+                input_birth_date = self.driver_browser.find_element(By.NAME, "c_birth_date")  # Поле даты рождения
+                if input_birth_date:
+                    input_birth_date.clear()  # Очистить поле
+                    input_birth_date.send_keys(self.data[row][4])  # Вставить дату (пример: 01.01.1990)
+                    break
+            except Exception as e:
+                print("Ошибка:", e)
+                if "10054" in str(e) or self.check_open_browser() == False:
+                    return
+                
+    
+        while True:
+            try:
+                input_pass_ser = self.driver_browser.find_element(By.NAME, "c_series")
+                if input_pass_ser:
+                    input_pass_ser.clear()  # Очистить поле
+                    input_pass_ser.send_keys(self.data[row][5]) 
+                    input_pass_num = self.driver_browser.find_element(By.NAME, "c_number") 
+                    input_pass_num.clear()  # Очистить поле
+                    input_pass_num.send_keys(self.data[row][6]) 
+                    input_pass_date = self.driver_browser.find_element(By.NAME, "c_issue_date")  
+                    input_pass_date.clear()  # Очистить поле
+                    input_pass_date.send_keys(self.data[row][7]) 
+                    break
+            except Exception as e:
+                print("Ошибка:", e)
+                if "10054" in str(e) or self.check_open_browser() == False:
+                    return
+        
+        while True:
+            try:
+                is_class = self.driver_browser.find_element(By.CLASS_NAME, "info__img")
+                if is_class:
+                    self.save_as_pdf(row)
+                    break
+            except Exception as e:
+                print("Ошибка:", e)
+                if "10054" in str(e) or self.check_open_browser() == False:
+                    return
+    
+
+
+    def open_browser(self):
+        # Настройка WebDriver
+        options = webdriver.ChromeOptions()
+        options.add_experimental_option("detach", True)  # Оставить браузер открытым
+        self.driver_browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+        # Открываем страницу (замените URL на нужный)
+        self.driver_browser.get("https://www.gosuslugi.ru/655781/1/form")
+    
+    def close_browser(self):
+        # Оставляем браузер открытым на 10 секунд
+        time.sleep(10)
+        self.driver_browser.quit()
+    
+    
+    def check_open_browser(self):
+        try:
+            if self.driver_browser is None:
+                return False
+            if self.driver_browser.service.process.poll() is not None:
+                return False
+            if len(self.driver_browser.window_handles) == 0:
+                return False
+            return True
+        except:
+            return False
+
+    
+    def save_as_pdf(self, row):
+        if os.path.isdir(".\\out_check"):
+            pass
+        else:
+            os.mkdir(f".\\out_check")
+
+        output_path = f".\\out_check\\{self.data[row][0]}.pdf"
+        """Сохраняет страницу в PDF через Chrome DevTools Protocol"""
+        pdf = self.driver_browser.execute_cdp_cmd("Page.printToPDF", {})
+        with open(output_path, "wb") as f:
+            f.write(base64.b64decode(pdf['data']))
+    
 def change_sheet(
                 sheet, 
                 row: int, 

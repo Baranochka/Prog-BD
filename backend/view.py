@@ -5,12 +5,11 @@
 
 import customtkinter as ctk
 from PIL import Image
-from tkinter import ttk
+from tkinter import Label, ttk
 from datetime import datetime
 from backend.update_app import UpdateApp
 
-# Переменная для хранения строки таблицы, на которую нажали
-__row_click__ = 0
+__row_click__ = 0   # Переменная для хранения строки таблицы, на которую нажали
 
 class View():
     def __init__(self, model, version: str) -> None:
@@ -40,14 +39,14 @@ class WindowAuthorizationConnectionBD(ctk.CTkToplevel):
                       bg_color="white", height=15).place(x=130, y=40)
         self.entry_login = ctk.CTkEntry(
             self.frame_auth, width=180, justify="center")
-        
+        self.entry_login.insert(0,"")
 
         self.entry_login.place(x=60, y=60)
         ctk.CTkLabel(self.frame_auth, text="Пароль",
                       bg_color="white", height=10).place(x=126, y=90)
         self.entry_password = ctk.CTkEntry(
             self.frame_auth, width=180, justify="center")
-        
+        self.entry_password.insert(0,"")
 
         self.entry_password.place(x=60, y=110)
         self.entry_password.configure(show="*")
@@ -113,7 +112,6 @@ class WindowProgramm(ctk.CTk):
         self.iconbitmap(self.model.path_ico)
 
         # Создаём CTkLabel с изображением
-        print(self.model.path_jpg)
         my_image = ctk.CTkImage(
             light_image=Image.open(self.model.path_jpg), size=(150, 100))
 
@@ -126,18 +124,21 @@ class WindowProgramm(ctk.CTk):
                       bg_color="white").place(x=20, y=150)
         self.entry_familia = ctk.CTkEntry(master=self, width=250)
         self.entry_familia.place(x=90, y=150)
-
+        self.entry_familia.bind("<Return>", command=self.click_find)
+        
         # # Создание ярлыка и текстового поля для ввода имени
         ctk.CTkLabel(master=self, text="Имя:",
                       bg_color="white").place(x=20, y=180)
         self.entry_name = ctk.CTkEntry(master=self, width=250)
         self.entry_name.place(x=90, y=180)
+        self.entry_name.bind("<Return>", command=self.click_find)
 
         # # Создание ярлыка и текстового поля для ввода отчества
         ctk.CTkLabel(master=self, text="Отчество:",
                       bg_color="white").place(x=20, y=210)
         self.entry_otchestvo = ctk.CTkEntry(master=self, width=250)
         self.entry_otchestvo.place(x=90, y=210)
+        self.entry_otchestvo.bind("<Return>", command=self.click_find)
 
         """---------------------------------------------------ДАТА--------------------------------------------------"""
 
@@ -167,6 +168,12 @@ class WindowProgramm(ctk.CTk):
         # Создание кнопки "Поиск"
         ctk.CTkButton(self, text="Поиск",
                        command=self.click_find).place(x=450, y=240)
+        
+        """---------------------------------------------------КНОПКА-ПРОВЕРКИ--------------------------------------------------------------"""
+
+        # Создание кнопки "Поиск"
+        ctk.CTkButton(self, text="Проверка в реестре контролируемых лиц",
+                       command=self.click_check_registry).place(x=650, y=240)
 
         """------------------------------------------------------ТАБЛИЦА-------------------------------------------------------------"""
 
@@ -220,10 +227,11 @@ class WindowProgramm(ctk.CTk):
                           #    "Срок обучения по",                      #39     kont_end
                           )
         style = ttk.Style()
-        style.configure("Custom.Treeview", font=("Arial", 14))
+        style.configure("Treeview.Heading", font=("Cascadia Code", 14))  # Устанавливаем шрифт заголовков
+        style.configure("Custom.Treeview", font=("Cascadia Code", 14))  # Устанавливаем шрифт заголовков
+        style.configure("Treeview", rowheight=30)
         # Создание таблицы
-        self.tree = ttk.Treeview(self.frame_table, columns=self.columns,
-                                   height=20, show='headings', style="Custom.Treeview")
+        self.tree = ttk.Treeview(self.frame_table, columns=self.columns, show='headings', style="Custom.Treeview")
 
         # Определение размера столбцов
         for col in self.columns:
@@ -272,7 +280,7 @@ class WindowProgramm(ctk.CTk):
         self.tree.bind("<Double-1>", self.click_on_table)
 
   
-    def click_find(self):
+    def click_find(self, event = None):
 
         if self.entry_familia.get() == "":
             if self.entry_name.get() == "":
@@ -318,6 +326,9 @@ class WindowProgramm(ctk.CTk):
         global __row_click__
         __row_click__ = int(row[1:])  # I000
         WindowInformation(self, self.model)
+        
+    def click_check_registry(self):
+        WindowCheckGosuslugi(self, self.model)
 
 class WindowInformation(ctk.CTkToplevel):
 
@@ -326,16 +337,46 @@ class WindowInformation(ctk.CTkToplevel):
         self.model = model
         # Описание окна
         self.title("Информация о студенте")
+        # center_window(self, 900, 700)
+        self.state("zoomed")
 
-        center_window(self, 900, 600)
+        
         self.configure(fg_color="white")
         self.iconbitmap(self.model.path_ico)
         blue = "#6699CC"
         white = "white"
         black = "black"
+        
+        
+        tabview = ctk.CTkTabview(
+            self, 
+            fg_color=white, 
+            anchor="nw",
+        )
+        tabview.pack(fill="both", expand=True, padx=10, pady=10)
+        tab1 = tabview.add("Информация")
+        tab2 = tabview.add("Редактирование")
+        
+        self.frame_view_inf = ctk.CTkFrame(tab1, width=865, height=520, fg_color=white)
+        self.frame_view_inf.place(x=0, y=5)
+        
+        self.frame_editing = ctk.CTkFrame(tab2, width=865, height=520, fg_color=blue)
+        self.frame_editing.pack(fill="both", expand=True)
+        self.view_inf()
+        self.view_editing()
+
+        # Фиксация окна
+        # self.grab_set()
+        # self.focus_set()
+        # self.wait_window()
+
+    def view_inf(self):
+        blue = "#6699CC"
+        white = "white"
+        black = "black"
         my_font = ctk.CTkFont(family="Arial", size=16)
 
-        ctk.CTkFrame(self, width=890, height=90,
+        ctk.CTkFrame(master = self.frame_view_inf, width=855, height=90,
                       fg_color=blue).place(x=5, y=5)
         self.do_lable("Фамилия:", 10, 10, blue, blue, white)
         self.do_lable(self.model.data[__row_click__][0], 80, 10, blue, blue, white) 
@@ -358,7 +399,7 @@ class WindowInformation(ctk.CTkToplevel):
         self.do_lable("Телефон:", 290, 100, white, white, black)
         self.do_lable(f"+7{self.model.data[__row_click__][20]}", 350, 100, white, white, black) 
 
-        ctk.CTkFrame(self, width=400, height=95,
+        ctk.CTkFrame(self.frame_view_inf, width=400, height=95,
                       fg_color=blue).place(x=5, y=125)
         self.do_lable("Гражданство:", 10, 130, blue, blue, white)
         self.do_lable(self.model.data[__row_click__][6], 100, 130, blue, blue, white) 
@@ -367,9 +408,9 @@ class WindowInformation(ctk.CTkToplevel):
         self.do_lable("Город рождения:", 10, 190, blue, blue, white)
         self.do_lable(self.model.data[__row_click__][10], 120, 190, blue, blue, white)
 
-        ctk.CTkFrame(self, width=400, height=90,
+        ctk.CTkFrame(self.frame_view_inf, width=400, height=90,
                       fg_color=blue).place(x=5, y=230)
-        ctk.CTkLabel(master=self, text="Паспортные данные", bg_color=blue,
+        ctk.CTkLabel(master=self.frame_view_inf, text="Паспортные данные", bg_color=blue,
                       fg_color=blue, text_color=white, font=my_font).place(x=10, y=235)
 
         self.do_lable("Серия", 10, 265, blue, blue, white)
@@ -382,9 +423,9 @@ class WindowInformation(ctk.CTkToplevel):
         self.do_lable(self.model.data[__row_click__][14], 303, 285, blue, white, blue) 
 
         if self.model.data[__row_click__][28] == "нет":
-            ctk.CTkFrame(self, width=400, height=90,
+            ctk.CTkFrame(self.frame_view_inf, width=400, height=90,
                           fg_color=blue).place(x=425, y=230)
-            ctk.CTkLabel(master=self, text="Виза", bg_color=blue,
+            ctk.CTkLabel(master=self.frame_view_inf, text="Виза", bg_color=blue,
                           fg_color=blue, text_color=white, font=my_font).place(x=430, y=235)
             self.do_lable("Серия", 430, 265, blue, blue, white)
             self.do_lable(self.model.data[__row_click__][16], 433, 285, blue, white, blue) 
@@ -395,9 +436,9 @@ class WindowInformation(ctk.CTkToplevel):
             self.do_lable("Срок действия", 730, 265, blue, blue, white)
             self.do_lable(self.model.data[__row_click__][19], 733, 285, blue, white, blue) 
         elif self.model.data[__row_click__][28] == "ВНЖ":
-            ctk.CTkFrame(self, width=400, height=90,
+            ctk.CTkFrame(self.frame_view_inf, width=400, height=90,
                           fg_color=blue).place(x=425, y=230)
-            ctk.CTkLabel(master=self, text="ВНЖ", bg_color=blue,
+            ctk.CTkLabel(master=self.frame_view_inf, text="ВНЖ", bg_color=blue,
                           fg_color=blue, text_color=white, font=my_font).place(x=430, y=235)
             self.do_lable("Серия", 430, 265, blue, blue, white)
             self.do_lable(self.model.data[__row_click__][31], 433, 285, blue, white, blue) 
@@ -408,9 +449,9 @@ class WindowInformation(ctk.CTkToplevel):
             self.do_lable("Срок действия", 730, 265, blue, blue, white)
             self.do_lable(self.model.data[__row_click__][30], 733, 285, blue, white, blue) 
         elif self.model.data[__row_click__][28] == "РВПО":
-            ctk.CTkFrame(self, width=400, height=90,
+            ctk.CTkFrame(self.frame_view_inf, width=400, height=90,
                           fg_color=blue).place(x=425, y=230)
-            ctk.CTkLabel(master=self, text="РВПО", bg_color=blue,
+            ctk.CTkLabel(master=self.frame_view_inf, text="РВПО", bg_color=blue,
                           fg_color=blue, text_color=white, font=my_font).place(x=430, y=235)
             self.do_lable("Серия", 430, 265, blue, blue, white)
             self.do_lable(self.model.data[__row_click__][31], 433, 285, blue, white, blue) 
@@ -427,18 +468,18 @@ class WindowInformation(ctk.CTkToplevel):
                             325, white, white, black)
         self.do_lable(self.model.data[__row_click__][22], 139, 345, white, white, black) 
 
-        ctk.CTkFrame(self, width=400, height=90,
+        ctk.CTkFrame(self.frame_view_inf, width=400, height=90,
                       fg_color=blue).place(x=5, y=375)
-        ctk.CTkLabel(master=self, text="Миграционная карта", bg_color=blue,
+        ctk.CTkLabel(master=self.frame_view_inf, text="Миграционная карта", bg_color=blue,
                       fg_color=blue, text_color=white, font=my_font).place(x=10, y=380)
         self.do_lable("Серия", 10, 410, blue, blue, white)
         self.do_lable(self.model.data[__row_click__][23], 13, 430, blue, white, blue) 
         self.do_lable("Номер", 100, 410, blue, blue, white)
         self.do_lable(self.model.data[__row_click__][24], 103, 430, blue, white, blue) 
 
-        ctk.CTkFrame(self, width=400, height=90,
+        ctk.CTkFrame(self.frame_view_inf, width=400, height=90,
                       fg_color=blue).place(x=425, y=375)
-        ctk.CTkLabel(master=self, text="Общежитие", bg_color=blue,
+        ctk.CTkLabel(master=self.frame_view_inf, text="Общежитие", bg_color=blue,
                       fg_color=blue, text_color=white, font=my_font).place(x=430, y=380)
         num = self.model.data[__row_click__][25]
         self.do_lable("Номер корпуса", 435, 410, blue, blue, white)
@@ -449,22 +490,31 @@ class WindowInformation(ctk.CTkToplevel):
         self.do_lable(self.model.data[__row_click__][27], 683, 430, blue, white, blue) 
 
         # Создание кнопки "Сформировать"
-        ctk.CTkButton(self, text="Сформировать в Excel", text_color=white,
-                       fg_color=blue, command=self.click_form_excel).place(x=740, y=500)
-        ctk.CTkButton(self, text="Сформировать уведомление", text_color=white,
-                       fg_color=blue, command=self.click_form_Word).place(x=540, y=500)
+        ctk.CTkButton(self.frame_view_inf, text="Сформировать в Excel", text_color=white,
+                       fg_color=blue, command=self.click_form_excel).place(x=710, y=490)
+        ctk.CTkButton(self.frame_view_inf, text="Сформировать уведомление", text_color=white,
+                       fg_color=blue, command=self.click_form_Word).place(x=510, y=490)
 
-        # Фиксация окна
-        self.grab_set()
-        self.focus_set()
-        self.wait_window()
+    def view_editing(self):
+        blue = "#6699CC"
+        white = "white"
+        black = "black"
+        frame_FIO = ctk.CTkFrame(master=self.frame_editing, height=100, fg_color=white)
+        frame_FIO.pack(padx=5, pady=5, ipadx=5, ipady=5, anchor="nw")
+        ctk.CTkLabel(master=frame_FIO, text="Фамилия: ",fg_color=white, text_color=blue, height=20).grid(row=0, column=0, sticky="w")
+        self.entry_familiya_rus = ctk.CTkEntry(master=frame_FIO, placeholder_text="AHMED", width=250)
+        self.entry_familiya_rus.grid(row=0, column=1, sticky="s")
+        ctk.CTkLabel(master=frame_FIO, text="Имя: ",fg_color=white, text_color=blue, height=20).grid(row=0, column=2, sticky="s")
+        self.entry_imya_rus = ctk.CTkEntry(master=frame_FIO, placeholder_text="AHMED", width=250)
+        self.entry_imya_rus.grid(row=0, column=3, sticky="s")
+
 
     def do_lable(self, text, x, y, bg_color, fg_color, text_color):
         if text == "" or text.isspace():
-            ctk.CTkLabel(master=self, text="Отсутствует", height=10, fg_color=fg_color,
+            ctk.CTkLabel(master=self.frame_view_inf, text="Отсутствует", height=10, fg_color=fg_color,
                       bg_color=bg_color, text_color=text_color).place(x=x, y=y)
         else: 
-            ctk.CTkLabel(master=self, text=text, height=10, fg_color=fg_color,
+            ctk.CTkLabel(master=self.frame_view_inf, text=text, height=10, fg_color=fg_color,
                       bg_color=bg_color, text_color=text_color).place(x=x, y=y)
 
     def click_form_excel(self):
@@ -472,6 +522,207 @@ class WindowInformation(ctk.CTkToplevel):
 
     def click_form_Word(self):
         WindowSaveWord(self, self.model)
+
+class WindowCheckGosuslugi(ctk.CTkToplevel):
+
+    def __init__(self, parent, model):
+        super().__init__(parent)
+        self.model = model
+        # Описание окна
+        self.title("Проверка в реестре контролируемых лиц")
+        center_window(self, 1000, 600)
+        self.configure(fg_color="white")
+        """--------------------------------------------------ФИО---------------------------------------------------"""
+
+        # Создание ярлыка и текстового поля для ввода фамилии
+        ctk.CTkLabel(master=self, text="Фамилия:",
+                      bg_color="white").place(x=20, y=150)
+        self.entry_familia = ctk.CTkEntry(master=self, width=250)
+        self.entry_familia.place(x=90, y=150)
+        # self.entry_familia.bind("<Return>", command=self.click_find)
+        
+        # # Создание ярлыка и текстового поля для ввода имени
+        ctk.CTkLabel(master=self, text="Имя:",
+                      bg_color="white").place(x=20, y=180)
+        self.entry_name = ctk.CTkEntry(master=self, width=250)
+        self.entry_name.place(x=90, y=180)
+        # self.entry_name.bind("<Return>", command=self.click_find)
+
+        # # Создание ярлыка и текстового поля для ввода отчества
+        ctk.CTkLabel(master=self, text="Отчество:",
+                      bg_color="white").place(x=20, y=210)
+        self.entry_otchestvo = ctk.CTkEntry(master=self, width=250)
+        self.entry_otchestvo.place(x=90, y=210)
+        # self.entry_otchestvo.bind("<Return>", command=self.click_find)
+
+        """---------------------------------------------------ДАТА--------------------------------------------------"""
+
+        # Создание ярлыка даты рождения
+        ctk.CTkLabel(self, text="Дата рождения:",
+                      bg_color="white").place(x=20, y=240)
+
+        # Переменные для хранения значений даты рождения
+        self.day_var = ctk.StringVar(value="1")
+        self.month_var = ctk.StringVar(value="1")
+        self.year_var = ctk.StringVar(value="1900")
+
+        # CTkSpinbox для дня от 1 до 31
+        ctk.CTkEntry(master=self, textvariable=self.day_var,
+                      width=20).place(x=130, y=240)
+
+        # CTkSpinbox для месяца от 1 до 12
+        ctk.CTkEntry(master=self, textvariable=self.month_var,
+                      width=20).place(x=160, y=240)
+
+        # CTkSpinbox для года от 1900 до 2025
+        ctk.CTkEntry(master=self, textvariable=self.year_var,
+                      width=45).place(x=190, y=240)
+
+        """---------------------------------------------------КНОПКА-ПОИСКА--------------------------------------------------------------"""
+
+        # Создание кнопки "Поиск"
+        ctk.CTkButton(self, text="Поиск",
+                       command=self.click_find).place(x=450, y=240)
+        """---------------------------------------------------КНОПКА-ПОКАЗАТЬ-ВСЕХ--------------------------------------------------------------"""
+
+        # Создание кнопки "Поиск"
+        ctk.CTkButton(self, text="Показать всех",
+                       command=self.click_find_all).place(x=650, y=240)
+
+
+        """------------------------------------------------------ТАБЛИЦА-------------------------------------------------------------"""
+
+        # Создание контейнера для таблицы (изначально скрыт)
+        self.frame_table = ctk.CTkFrame(
+            self, fg_color="white", width=1000, height=310)
+
+        # Отключение видимости таблицы
+        self.frame_table.pack_forget()
+
+        # Первая строка с названиями столбцов
+        self.columns = ("Фамилия",  # 0      fru
+                          "Familia",  # 1      last_lat
+                          "Имя",  # 2      name_rus
+                          "Imya"  # 3      nla
+                        )
+        style = ttk.Style()
+        style.configure("Treeview.Heading", font=("Cascadia Code", 14))  # Устанавливаем шрифт заголовков
+        style.configure("Custom.Treeview", font=("Cascadia Code", 14))  # Устанавливаем шрифт заголовков
+        style.configure("Treeview", rowheight=30)
+        # Создание таблицы
+        self.tree = ttk.Treeview(self.frame_table, columns=self.columns, show='headings', style="Custom.Treeview")
+
+        # Определение размера столбцов
+        for col in self.columns:
+            self.tree.heading(col, text=col)
+            self.tree.column(col, anchor="center", stretch=True, width=300)
+
+        # Создание пролистывания по таблице
+        scrollbar_y = ctk.CTkScrollbar(
+            self.frame_table, width=15, height=50)
+        scrollbar_y.place(x=985, y=0)
+        self.tree.configure(yscrollcommand=scrollbar_y.set)
+
+        # scrollbar_x = ctk.CTkScrollbar(self.frame_table, width=15, height=15)
+        # scrollbar_x.place(x=0, y=295)
+        # self.tree.configure(xscrollcommand=scrollbar_x.set)
+
+        self.tree.place(x=0, y=0, relwidth=1, relheight=1)
+
+        """--------------------------------------------------------ОШИБКА-ОТСУТСТВИЯ-ДАННЫХ-----------------------------------------------------------"""
+
+        # Создание контейнера для ошибки при отсутствии вводных данных
+        self.frame_false = ctk.CTkFrame(self, fg_color="white")
+
+        # Отключение видимости ошибки
+        self.frame_false.pack_forget()
+
+        # Создание ярлыка отсутствия галочек
+        ctk.CTkLabel(master=self.frame_false, text="Введите данные",
+                      fg_color="white", text_color="red").pack(side="top")
+
+        """--------------------------------------------------------ОШИБКА-ОТСУТСТВИЯ-СТУДЕНТОВ-----------------------------------------------------------"""
+
+        # Создание контейнера для ошибки при отсутствии студентов
+        self.frame_false_stud = ctk.CTkFrame(self, fg_color="white")
+
+        # Отключение видимости ошибки
+        self.frame_false_stud.pack_forget()
+
+        # Создание ярлыка отсутствия галочек
+        ctk.CTkLabel(master=self.frame_false_stud, text="Студент(ы) не найден(ы)",
+                      fg_color="white", text_color="red").pack(side="top")
+
+        """-------------------------------------------------------ОТКЛИК-НА-ТАБЛИЦУ----------------------------------------------------------"""
+
+        # Возможность отклика на таблицу
+        self.tree.bind("<Double-1>", self.click_on_table)
+        
+                # Фиксация окна
+                
+        self.protocol("WM_DELETE_WINDOW", self.close_app)
+                
+        self.grab_set()
+        self.focus_set()
+        self.wait_window()
+        
+    def click_find_all(self, event = None):
+
+        self.frame_false_stud.place_forget()
+        self.frame_false.place_forget()
+        self.find(2)
+
+    def click_find(self, event = None):
+
+        if self.entry_familia.get() == "":
+            if self.entry_name.get() == "":
+                if self.entry_otchestvo.get() == "":
+                    if self.day_var.get() == "1":
+                        if self.month_var.get() == "1":
+                            if self.year_var.get() == "1900":
+
+                                self.frame_table.place_forget()
+                                self.frame_false.place(x=440, y=290)
+                                return
+
+        self.frame_false_stud.place_forget()
+        self.frame_false.place_forget()
+        self.find(1)
+
+    # Функция поиска
+    def find(self, check):
+        self.tree.delete(*self.tree.get_children())
+
+        surname = self.entry_familia.get().upper() if self.entry_familia.get() else None
+        name = self.entry_name.get().upper() if self.entry_name.get() else None
+        och = self.entry_otchestvo.get().upper() if self.entry_otchestvo.get() else None
+        day = self.day_var.get()
+        month = self.month_var.get()
+        year = self.year_var.get()
+        birthdate = datetime(int(year), int(month), int(day))  # datetime(1990 01 02)
+        if check == 1:
+            self.model.find_in_db_for_check(surname, name, och, birthdate)
+        elif check == 2:
+            self.model.find_in_db_all_rows_for_check()
+
+        if self.model.is_data:
+            for i, var in enumerate(self.model.data):
+                self.tree.insert("", ctk.END, iid=f"I00{i}", values=var)
+            self.frame_table.place(x=0, y=290) 
+        else:
+            self.frame_table.place_forget()
+            self.frame_false_stud.place(x=440, y=290)
+
+    def click_on_table(self, event):
+        row = self.tree.identify_row(event.y)
+        global __row_click__
+        __row_click__ = int(row[1:])  # I000
+        self.model.check_on_gosuslugi(__row_click__)
+
+    def close_app(self):
+        if self.model.check_open_browser():
+            self.model.close_browser()
+        self.destroy()
 
 class WindowSaveExcel(ctk.CTkToplevel):
     def __init__(self, parent, model):
@@ -600,3 +851,9 @@ def center_window(
 
     # Устанавливаем размеры и положение окна
     self.geometry(f"{width}x{height}+{x}+{y}")
+
+def full_screen(self):
+    # Получаем размеры экрана
+    screen_width = self.winfo_screenwidth()
+    screen_height = self.winfo_screenheight()
+    self.geometry(f"{screen_width}x{screen_height}+0+0")
