@@ -132,7 +132,6 @@ class MSSQL(Database):
 
         # Если есть условия, добавляем их к запросу
         if conditions:
-            # query += " WHERE " + " OR ".join(conditions)
             query += f" WHERE {' AND '.join(conditions)}"
 
         # debug(query)
@@ -140,25 +139,18 @@ class MSSQL(Database):
         # Выполняем запрос
         self._cursor.execute(query, parameters)
 
-        # self.__debug(f"DEBUG args = '{surname}' '{name}' '{och}' '{birthdate}'")
         all_rows = self._cursor.fetchall()
         new_all_rows = []
 
         for row in all_rows:
             list_row = []
-            for i, field in enumerate(row):
-                print(field)
-                if isinstance(field, datetime) or i in [7, 13, 14, 18, 19, 21, 22, 29, 30, 38, 39, 40, 41, 43, 48, 49, 55, 57]:
-                    if field is None:
-                        list_row.append("          ")
-                    else:
-                        date = field.strftime("%d.%m.%Y")  # Форматируем
-                        list_row.append(date)
+            # print(row)
+            for field in row:
+                # print(field)
+                if isinstance(field, datetime):
+                        list_row.append(field)
                 else:
-                    list_row.append(str(field).strip()
-                                    if field is not None else "")
-            if len(list_row[20]) == 11:  # проверка номера на 11 символов
-                list_row[20] = list_row[20][1:]
+                    list_row.append(str(field).strip() if field is not None else "")
             new_all_rows.append(list_row)
         return new_all_rows
 
