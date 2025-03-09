@@ -12,6 +12,7 @@ from .view import View
 from pathlib import Path
 from docx import Document
 from docx.shared import Pt
+from datetime import datetime
 from backend.database import MSSQL
 from configparser import ConfigParser
 from selenium import webdriver
@@ -27,6 +28,7 @@ class Model():
     def __init__(self, version):
         self.db = None
         self.data = None
+        self.data_update = []
         self.path_jpg = None
         self.path_ico = None
         self.path_excel = None
@@ -50,11 +52,11 @@ class Model():
         config = ConfigParser()
         config.read(self.get_resource_path("config.ini"))
 
-        self.DRIVER = config["SQL Server"]["DRIVER"]
-        self.SERVER_NAME = config["SQL Server"]["SERVER_NAME"]
-        self.DATABASE_NAME = config["SQL Server"]["DATABASE_NAME"]
-        self.USERNAME = None
-        self.PASSWORD = None
+        # self.DRIVER = config["SQL Server"]["DRIVER"]
+        # self.SERVER_NAME = config["SQL Server"]["SERVER_NAME"]
+        # self.DATABASE_NAME = config["SQL Server"]["DATABASE_NAME"]
+        # self.USERNAME = None
+        # self.PASSWORD = None
 
 
         # self.DRIVER = config["Test"]["DRIVER"]
@@ -64,11 +66,11 @@ class Model():
         # self.PASSWORD      = None
 
 
-        # self.DRIVER = config["Test_Maks"]["DRIVER"]
-        # self.SERVER_NAME = config["Test_Maks"]["SERVER_NAME"]
-        # self.DATABASE_NAME = config["Test_Maks"]["DATABASE_NAME"]
-        # self.USERNAME = None
-        # self.PASSWORD = None
+        self.DRIVER = config["Test_Maks"]["DRIVER"]
+        self.SERVER_NAME = config["Test_Maks"]["SERVER_NAME"]
+        self.DATABASE_NAME = config["Test_Maks"]["DATABASE_NAME"]
+        self.USERNAME = None
+        self.PASSWORD = None
 
     def get_resource_path(self, filename: str) -> str:
         path_progs = Path(__file__).parent
@@ -571,24 +573,25 @@ class Model():
                 print("Ошибка:", e)
                 if "10054" in str(e) or self.check_open_browser() == False:
                     return
-    
-
 
     def open_browser(self):
-        # Настройка WebDriver
-        options = webdriver.ChromeOptions()
-        options.add_experimental_option("detach", True)  # Оставить браузер открытым
-        self.driver_browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        try:
+            # Настройка WebDriver
+            options = webdriver.ChromeOptions()
+            options.add_experimental_option("detach", True)  # Оставить браузер открытым
+            self.driver_browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-        # Открываем страницу (замените URL на нужный)
-        self.driver_browser.get("https://www.gosuslugi.ru/655781/1/form")
-    
+            # Открываем страницу (замените URL на нужный)
+            self.driver_browser.get("https://www.gosuslugi.ru/655781/1/form")
+        except Exception as e:
+                print("Ошибка:", e)
+                raise RuntimeError(f"Произошла ошибка ! {e}")  # Исключение с сообщением
+
     def close_browser(self):
         # Оставляем браузер открытым на 10 секунд
         time.sleep(10)
         self.driver_browser.quit()
-    
-    
+      
     def check_open_browser(self):
         try:
             if self.driver_browser is None:
@@ -600,8 +603,7 @@ class Model():
             return True
         except:
             return False
-
-    
+ 
     def save_as_pdf(self, row):
         if os.path.isdir(".\\out_check"):
             pass
@@ -613,7 +615,89 @@ class Model():
         pdf = self.driver_browser.execute_cdp_cmd("Page.printToPDF", {})
         with open(output_path, "wb") as f:
             f.write(base64.b64decode(pdf['data']))
-    
+
+    def process_update_database(self, window, row):
+        self.copy_change_to_data_update(window, row)
+        self.db.update_person(model = self, surname = self.data[row][1], name = self.data[row][3] )
+        
+    def copy_change_to_data_update(self, window, row):
+        self.data_update.clear()
+        print(self.data_update)
+        self.append_change(window.fru.get(), row, 0) 
+        self.append_change(window.last_lat.get(), row, 1)
+        self.append_change(window.name_rus.get(), row, 2)
+        self.append_change(window.nla.get(), row, 3)
+        self.append_change(window.och.get(), row, 4)
+        self.append_change(window.oche.get(), row, 5)
+        self.append_change(window.ctz1.get(), row, 6)
+        self.append_change(datetime.strptime(window.dob.get(), "%d.%m.%Y"), row, 7)
+        self.append_change(window.sex.get(), row, 8)
+        self.append_change(window.pob.get(), row, 9)
+        self.append_change(window.cob.get(), row, 10)
+        self.append_change(window.pas_ser.get(), row, 11)
+        self.append_change(window.pas_num.get(), row, 12)
+        self.append_change(window.pds.get(), row, 13)
+        self.append_change(window.pde.get(), row, 14)
+        self.append_change('', row, 15)
+        self.append_change(window.vis_ser.get(), row, 16)
+        self.append_change(window.vis_num.get(), row, 17)
+        self.append_change(window.vis_start.get(), row, 18)
+        self.append_change(window.vis_end.get(), row, 19)
+        self.append_change(window.tel_nom.get(), row, 20)
+        self.append_change(window.d_enter.get(), row, 21)
+        self.append_change('', row, 22)
+        self.append_change(window.mcs.get(), row, 23)
+        self.append_change(window.mcn.get(), row, 24)
+        self.append_change(window.k.get(), row, 25)
+        self.append_change(window.dnd.get(), row, 26)
+        self.append_change(window.dog_obsh.get(), row, 27)
+        self.append_change(window.rf.get(), row, 28)
+        self.append_change(window.rfd.get(), row, 29)
+        self.append_change(window.mot.get(), row, 30)
+        self.append_change(window.ser.get(), row, 31)
+        self.append_change(window.nmr.get(), row, 32)
+        self.append_change(window.vis_krat.get(), row, 33)
+        self.append_change(window.vis_id.get(), row, 34)
+        self.append_change(window.gos_nap.get(), row, 35)
+        self.append_change(window.proz.get(), row, 36)
+        self.append_change(window.kontrakt.get(), row, 37)
+        self.append_change(window.kont_start.get(), row, 38)
+        self.append_change(window.kont_end.get(), row, 39)
+        self.append_change('', row, 40)
+        self.append_change('', row, 41)
+        self.append_change(window.star.get(), row, 42)
+        self.append_change(window.d_poluch.get(), row, 43)
+        self.append_change(window.str_poluch.get(), row, 44)
+        self.append_change(window.city_poluch.get(), row, 45)
+        self.append_change(window.num_prig.get(), row, 46)
+        self.append_change(window.kpp.get(), row, 47)
+        self.append_change('', row, 48)
+        self.append_change(window.mot.get(), row, 49)
+        self.append_change(window.uch_st_st.get(), row, 50)
+        self.append_change(window.pr.get(), row, 51)
+        self.append_change(window.fr.get(), row, 52)
+        self.append_change(window.o_p.get(), row, 53)
+        self.append_change(window.prikaz.get(), row, 54)
+        self.append_change(window.prik_start.get(), row, 55)
+        self.append_change(window.o_s.get(), row, 56)
+        self.append_change(window.d_naym.get(), row, 57)
+        self.append_change(window.email.get(), row, 58)
+        self.append_change(window.prim.get(), row, 59)
+        
+        self.check_update_database(row)
+
+    def append_change(self, value, row, col):
+        if value == '':
+            self.data_update.append(self.data[row][col])
+        else: 
+            self.data_update.append(value)
+
+    def check_update_database(self, row):
+        for i, var in enumerate(self.data_update):
+            if var == self.data[row][i]:
+                self.data_update[i] = ''
+        print(self.data_update)
+   
 def change_sheet(
                 sheet, 
                 row: int, 

@@ -4,6 +4,8 @@ from typing import Optional, List, Any
 from pyodbc import connect, Row
 from datetime import datetime
 
+# from Temp import update
+
 
 def debug(*args, **kwargs) -> None:
     print(*args, **kwargs)
@@ -77,7 +79,6 @@ class MSSQL(Database):
             self.__debug(e)
             return None
 
-
     def get_person(self,
                    surname: Optional[str],
                    name: Optional[str],
@@ -85,11 +86,18 @@ class MSSQL(Database):
                    birthdate: Optional[datetime]) -> Optional[List[List[str]]]:
         # try:
         # Начинаем с базового запроса
-        query = "SELECT fru, last_lat, name_rus, nla, och, oche, ctz1, dob, " \
-                "sex, pob, cob, pas_ser, pas_num, pds, pde, visa_priz, vis_ser, vis_num, " \
-                "d_poluch, vis_end, tel_nom, d_enter, date_okon, mcs, mcn, k, " \
-                "dnd, dog_obsh, rf, rfd, mot, ser, nmr, vis_krat, vis_id, gos_nap, " \
-                "kont_start, kontrakt, kont_start, kont_end, gos_start, gos_end, star " \
+        query = "SELECT fru, last_lat, name_rus, nla, och, " \
+                "oche, ctz1, dob, sex, pob, " \
+                "cob, pas_ser, pas_num, pds, pde, " \
+                "visa_priz, vis_ser, vis_num, d_poluch, vis_end, " \
+                "tel_nom, d_enter, date_okon, mcs, mcn, " \
+                "k, dnd, dog_obsh, rf, rfd, " \
+                "mot, ser, nmr, vis_krat, vis_id, " \
+                "gos_nap, proz, kontrakt, kont_start, kont_end, " \
+                "gos_start, gos_end, star, d_poluch, str_poluch," \
+                "city_poluch, num_prig, kpp, med, mot, " \
+                "uch_st_st, pr, fr, o_p, prikaz, " \
+                "prik_start, o_s, d_naym, email, prim " \
                 "FROM persons"
 
         # Список условий и параметров
@@ -131,6 +139,7 @@ class MSSQL(Database):
 
         # Выполняем запрос
         self._cursor.execute(query, parameters)
+
         # self.__debug(f"DEBUG args = '{surname}' '{name}' '{och}' '{birthdate}'")
         all_rows = self._cursor.fetchall()
         new_all_rows = []
@@ -138,7 +147,8 @@ class MSSQL(Database):
         for row in all_rows:
             list_row = []
             for i, field in enumerate(row):
-                if isinstance(field, datetime) or i in [7, 13, 14, 18, 19, 21, 22, 29, 30, 36, 38, 39, 40, 41]:
+                print(field)
+                if isinstance(field, datetime) or i in [7, 13, 14, 18, 19, 21, 22, 29, 30, 38, 39, 40, 41, 43, 48, 49, 55, 57]:
                     if field is None:
                         list_row.append("          ")
                     else:
@@ -248,6 +258,39 @@ class MSSQL(Database):
             self.__debug(e)
             return None
 
+    def update_person(self, model=None,  surname=None, name=None, och=None, birthdate=None):
+        
+        
+        query = "UPDATE persons SET "
+        
+        parameters = []
+        updates = []
+        update_par = ['fru = ?', 'last_lat = ?', 'name_rus = ?', 'nla = ?', 'och = ?', 'oche = ?', 'ctz1 = ?', 'dob = ?', 'sex = ?', 'pob = ?', 
+                   'cob = ?', 'pas_ser = ?', 'pas_num = ?', 'pds = ?', 'pde = ?', 'visa_priz = ?', 'vis_ser = ?', 'vis_num = ?', 
+                    'vis_start = ?', 'vis_end = ?', 'tel_nom = ?', 'd_enter = ?', 'date_okon = ?', 'mcs = ?', 'mcn = ?', 'k = ?', 
+                   'dnd = ?', 'dog_obsh = ?', 'rf = ?', 'rfd = ?', 'mot = ?', 'ser = ?', 'nmr = ?', 'vis_krat = ?', 'vis_id = ?', 
+                   'gos_nap = ?', 'proz = ?', 'kontrakt = ?', 'kont_start = ?', 'kont_end = ?', 'gos_start = ?', 'gos_end = ?', 
+                   'star = ?', 'd_poluch = ?', 'str_poluch = ?', 'city_poluch = ?', 'num_prig = ?', 'kpp = ?', 'med = ?', 'mot = ?', 
+                   'uch_st_st = ?', 'pr = ?', 'fr = ?', 'o_p = ?', 'prikaz = ?', 'prik_start = ?', 'o_s = ?', 'd_naym = ?', 'email = ?',
+                   'prim = ?' ]
+        
+        for i, var in enumerate(update_par):
+            if model.data_update[i] != '':
+                updates.append(var)
+                parameters.append(model.data_update[i])
+
+        # Формируем запрос
+        query += ", ".join(updates) + " WHERE last_lat = ?"
+        parameters.append(surname)
+
+        # Выводим для отладки (если нужно)
+        print(query)
+        print(parameters)
+
+        # Выполняем запрос
+        self._cursor.execute(query, parameters)
+        self._connection.commit()  # Фиксируем изменения 
+    
     def check_rus_eng(self, text) -> bool:
         return bool(re.search(r'[а-яА-ЯёЁ]', text))
 
@@ -284,16 +327,21 @@ if __name__ == "__main__":
 
     db = MSSQL(DRIVER, SERVER_NAME, DATABASE_NAME, USERNAME, PASSWORD)
 
-    all_rows = db.get_person("ХРАЙЗАТ", None, None, datetime(1900, 1, 1))
+    all_rows = db.get_person("АМИРИ", None, None, datetime(1900, 1, 1))
     debug(all_rows)
-    col = ["fru", "last_lat", "name_rus", "nla", "och", "oche", "ctz1", "dob",
-           "sex", "pob", "cob", "pas_ser", "pas_num", "pds", "pde", "visa_priz", "vis_sev", "vis_num",
-           "d_poluch", "vis_endv", "vtel_nom", "d_enter", "date_okon", "mcs", "mcn", "k",
-           "dnd", "dog_obsh", "rf", "rfd", "motv", "ser", "nmr", "vis_krat", "vis_id", "gos_nap",
-           "kont_start", "kontrakt", "kont_start", "kont_end", "gos_start", "gos_end", "star"]
-    i = 0
-    for var, c in zip(all_rows[0], col):
-        debug(f"{i}. {c}: {var}")
-        i += 1
-    all_rows = db.get_person_for_check("ХРАЙЗАТ", None, None, datetime(1900, 1, 1))
-    debug(all_rows)
+    # col = ["fru", "last_lat", "name_rus", "nla", "och", "oche", "ctz1", "dob",
+    #        "sex", "pob", "cob", "pas_ser", "pas_num", "pds", "pde", "visa_priz", "vis_sev", "vis_num",
+    #        "d_poluch", "vis_endv", "vtel_nom", "d_enter", "date_okon", "mcs", "mcn", "k",
+    #        "dnd", "dog_obsh", "rf", "rfd", "motv", "ser", "nmr", "vis_krat", "vis_id", "gos_nap",
+    #        "kont_start", "kontrakt", "kont_start", "kont_end", "gos_start", "gos_end", "star"]
+    # i = 0
+    # # for var, c in zip(all_rows[0], col):
+    # #     debug(f"{i}. {c}: {var}")
+    # #     i += 1
+    # for var in all_rows[0]:
+    #     debug(f'{i}: "{var}"')
+    #     i += 1
+    # all_rows = db.get_person_for_check("ХРАЙЗАТ", None, None, datetime(1900, 1, 1))
+    # debug(all_rows)
+    
+    # db.update_person(surname="AHMED")

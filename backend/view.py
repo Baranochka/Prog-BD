@@ -2,10 +2,9 @@
 Описание классов Окон приложения. 
 
 """
-
 import customtkinter as ctk
 from PIL import Image
-from tkinter import Label, ttk
+from tkinter import ttk
 from datetime import datetime
 from backend.update_app import UpdateApp
 
@@ -39,14 +38,14 @@ class WindowAuthorizationConnectionBD(ctk.CTkToplevel):
                       bg_color="white", height=15).place(x=130, y=40)
         self.entry_login = ctk.CTkEntry(
             self.frame_auth, width=180, justify="center")
-        self.entry_login.insert(0,"")
+        self.entry_login.insert(0,"sa")
 
         self.entry_login.place(x=60, y=60)
         ctk.CTkLabel(self.frame_auth, text="Пароль",
                       bg_color="white", height=10).place(x=126, y=90)
         self.entry_password = ctk.CTkEntry(
             self.frame_auth, width=180, justify="center")
-        self.entry_password.insert(0,"")
+        self.entry_password.insert(0,"121270")
 
         self.entry_password.place(x=60, y=110)
         self.entry_password.configure(show="*")
@@ -72,6 +71,8 @@ class WindowAuthorizationConnectionBD(ctk.CTkToplevel):
                        command=self.connect).place(x=80, y=150)
         # Перехватываем нажатие на крестик (закрытие окна)
         self.protocol("WM_DELETE_WINDOW", self.close_app)
+        
+        self.connect()
 
     def close_app(self):
         # Завершает весь Tkinter
@@ -125,6 +126,7 @@ class WindowProgramm(ctk.CTk):
         self.entry_familia = ctk.CTkEntry(master=self, width=250)
         self.entry_familia.place(x=90, y=150)
         self.entry_familia.bind("<Return>", command=self.click_find)
+        self.entry_familia.insert(0,"ahmed")
         
         # # Создание ярлыка и текстового поля для ввода имени
         ctk.CTkLabel(master=self, text="Имя:",
@@ -278,6 +280,7 @@ class WindowProgramm(ctk.CTk):
 
         # Возможность отклика на таблицу
         self.tree.bind("<Double-1>", self.click_on_table)
+        
 
   
     def click_find(self, event = None):
@@ -335,6 +338,7 @@ class WindowInformation(ctk.CTkToplevel):
     def __init__(self, parent, model):
         super().__init__(parent)
         self.model = model
+        self.parent = parent
         # Описание окна
         self.title("Информация о студенте")
         # center_window(self, 900, 700)
@@ -348,27 +352,31 @@ class WindowInformation(ctk.CTkToplevel):
         black = "black"
         
         
-        tabview = ctk.CTkTabview(
-            self, 
-            fg_color=white, 
-            anchor="nw",
-        )
-        tabview.pack(fill="both", expand=True, padx=10, pady=10)
-        tab1 = tabview.add("Информация")
-        tab2 = tabview.add("Редактирование")
+        # tabview = ctk.CTkTabview(
+        #     self, 
+        #     fg_color=white, 
+        #     anchor="nw",
+        # )
+        # tabview.pack(fill="both", expand=True, padx=10, pady=10)
+        # tab1 = tabview.add("Информация")
+        # tab2 = tabview.add("Редактирование")
         
-        self.frame_view_inf = ctk.CTkFrame(tab1, width=865, height=520, fg_color=white)
-        self.frame_view_inf.place(x=0, y=5)
+        # self.frame_view_inf = ctk.CTkFrame(tab1, width=865, height=520, fg_color=white)
+        # self.frame_view_inf.place(x=0, y=5)
         
-        self.frame_editing = ctk.CTkFrame(tab2, width=865, height=520, fg_color=blue)
+        self.frame_editing = ctk.CTkFrame(self, width=865, height=520, fg_color=blue)
         self.frame_editing.pack(fill="both", expand=True)
-        self.view_inf()
+        self.scroll_frame_editing = ctk.CTkScrollableFrame(self.frame_editing, width=865, height=300, fg_color=blue)
+        self.scroll_frame_editing.pack(fill="both", expand=True)
+        
+        # self.view_inf()
         self.view_editing()
 
         # Фиксация окна
         # self.grab_set()
         # self.focus_set()
         # self.wait_window()
+        
 
     def view_inf(self):
         blue = "#6699CC"
@@ -499,14 +507,328 @@ class WindowInformation(ctk.CTkToplevel):
         blue = "#6699CC"
         white = "white"
         black = "black"
-        frame_FIO = ctk.CTkFrame(master=self.frame_editing, height=100, fg_color=white)
-        frame_FIO.pack(padx=5, pady=5, ipadx=5, ipady=5, anchor="nw")
-        ctk.CTkLabel(master=frame_FIO, text="Фамилия: ",fg_color=white, text_color=blue, height=20).grid(row=0, column=0, sticky="w")
-        self.entry_familiya_rus = ctk.CTkEntry(master=frame_FIO, placeholder_text="AHMED", width=250)
-        self.entry_familiya_rus.grid(row=0, column=1, sticky="s")
-        ctk.CTkLabel(master=frame_FIO, text="Имя: ",fg_color=white, text_color=blue, height=20).grid(row=0, column=2, sticky="s")
-        self.entry_imya_rus = ctk.CTkEntry(master=frame_FIO, placeholder_text="AHMED", width=250)
-        self.entry_imya_rus.grid(row=0, column=3, sticky="s")
+        frame_FIO = ctk.CTkFrame(master=self.scroll_frame_editing, height=120, fg_color=white)
+        frame_FIO.pack(padx=5, pady=[5,4], anchor="nw", fill="x")
+        
+        
+        ctk.CTkLabel(master=frame_FIO, text="Фамилия: ", fg_color=white, text_color=blue, height=30, anchor = "center").place(x=5, y=5)
+        self.fru = ctk.CTkEntry(master=frame_FIO, width=250, height=30)
+        self.fru.insert(0, self.model.data[__row_click__][0])
+        self.fru.place(x=70, y=5)
+        
+        ctk.CTkLabel(master=frame_FIO, text="Имя: ", fg_color=white, text_color=blue, height=30, anchor = "center").place(x=5,y=45)
+        self.name_rus = ctk.CTkEntry(master=frame_FIO, width=250, height=30)
+        self.name_rus.insert(0, self.model.data[__row_click__][2])
+        self.name_rus.place(x=70, y=45)
+    
+        ctk.CTkLabel(master=frame_FIO, text="Отчество: ", fg_color=white, text_color=blue, height=30, anchor = "center").place(x=5,y=85)
+        self.och = ctk.CTkEntry(master=frame_FIO, width=250, height=30)
+        self.och.insert(0, self.model.data[__row_click__][4])
+        self.och.place(x=70, y=85)
+        
+        
+        ctk.CTkLabel(master=frame_FIO, text="Фамилия (лат.): ", fg_color=white, text_color=blue, height=30, anchor = "center").place(x=350, y=5)
+        self.last_lat = ctk.CTkEntry(master=frame_FIO, width=250, height=30)
+        self.last_lat.insert(0, self.model.data[__row_click__][1])
+        self.last_lat.place(x=451, y=5)
+        
+        ctk.CTkLabel(master=frame_FIO, text="Имя (лат.): ", fg_color=white, text_color=blue, height=30, anchor = "center").place(x=350,y=45)
+        self.nla = ctk.CTkEntry(master=frame_FIO, width=250, height=30)
+        self.nla.insert(0, self.model.data[__row_click__][3])
+        self.nla.place(x=451, y=45)
+     
+        ctk.CTkLabel(master=frame_FIO, text="Отчество (лат.): ", fg_color=white, text_color=blue, height=30, anchor = "center").place(x=350,y=85)
+        self.oche = ctk.CTkEntry(master=frame_FIO, width=250, height=30)
+        self.oche.insert(0, self.model.data[__row_click__][5])
+        self.oche.place(x=451, y=85)
+
+        frame_2 = ctk.CTkFrame(master=self.scroll_frame_editing, height=105, fg_color=white) #55
+        frame_2.pack(padx=5, pady=[1,4], anchor="nw", fill="x")
+
+        ctk.CTkLabel(master=frame_2, text="Пол", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=28,y=5)
+        self.sex = ctk.CTkComboBox(master=frame_2, values=["Мужской", "Женский"], width=90, height=20)
+        self.sex.configure(variable=ctk.StringVar(value=self.model.data[__row_click__][8]))
+        self.sex.place(x=5, y=25)
+        
+        ctk.CTkLabel(master=frame_2, text="Дата рождения", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=95,y=5)
+        self.dob = ctk.CTkEntry(master=frame_2, width=80, height=20)
+        self.dob.insert(0, self.model.data[__row_click__][7])
+        self.dob.place(x=100, y=25)
+        
+        ctk.CTkLabel(master=frame_2, text="Страна рождения", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=237,y=5)
+        self.pob = ctk.CTkEntry(master=frame_2, width=160, height=20)
+        self.pob.insert(0, self.model.data[__row_click__][9])
+        self.pob.place(x=210, y=25)
+        
+        ctk.CTkLabel(master=frame_2, text="Город рождения", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=430,y=5)
+        self.cob = ctk.CTkEntry(master=frame_2, width=160, height=20)
+        self.cob.insert(0, self.model.data[__row_click__][10])
+        self.cob.place(x=400, y=25)
+        
+        ctk.CTkLabel(master=frame_2, text="Гражданство", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=627,y=5)
+        self.ctz1 = ctk.CTkEntry(master=frame_2, width=160, height=20)
+        self.ctz1.insert(0, self.model.data[__row_click__][6])
+        self.ctz1.place(x=590, y=25)
+        
+        ctk.CTkLabel(master=frame_2, text="Адрес в стране постоянного проживания", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=50)
+        self.proz = ctk.CTkEntry(master=frame_2, width=280, height=20)
+        self.proz.insert(0, self.model.data[__row_click__][36])
+        self.proz.place(x=5, y=70)
+        
+        frame_3 = ctk.CTkFrame(master=self.scroll_frame_editing, height=80, fg_color=white)
+        frame_3.pack(padx=5, pady=[1,4], anchor="nw", fill="x")
+
+        ctk.CTkLabel(master=frame_3, text="ПАСПОРТ", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=5)
+        
+        ctk.CTkLabel(master=frame_3, text="Серия", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=25)
+        self.pas_ser = ctk.CTkEntry(master=frame_3, width=70, height=20)
+        self.pas_ser.insert(0, self.model.data[__row_click__][11])
+        self.pas_ser.place(x=5, y=45)
+        
+        ctk.CTkLabel(master=frame_3, text="Номер", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=80,y=25)
+        self.pas_num = ctk.CTkEntry(master=frame_3, width=85, height=20)
+        self.pas_num.insert(0, self.model.data[__row_click__][12])
+        self.pas_num.place(x=80, y=45)
+        
+        ctk.CTkLabel(master=frame_3, text="Дата выдачи", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=176, y=25)
+        self.pds = ctk.CTkEntry(master=frame_3, width=80, height=20)
+        self.pds.insert(0, self.model.data[__row_click__][13])
+        self.pds.place(x=176, y=45)
+        
+        ctk.CTkLabel(master=frame_3, text="Дата окончания", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=270,y=25)
+        self.pde = ctk.CTkEntry(master=frame_3,  width=80, height=20)
+        self.pde.insert(0, self.model.data[__row_click__][14])
+        self.pde.place(x=270, y=45)
+        
+        frame_4 = ctk.CTkFrame(master=self.scroll_frame_editing, height=130, fg_color=white)
+        frame_4.pack(padx=5, pady=[1,4], anchor="nw", fill="x")
+        
+        ctk.CTkLabel(master=frame_4, text="ВИЗА", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=5)
+        
+        ctk.CTkLabel(master=frame_4, text="Кратность", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=25)
+        self.vis_krat = ctk.CTkEntry(master=frame_4, width=103, height=20)
+        self.vis_krat.insert(0, self.model.data[__row_click__][33])
+        self.vis_krat.place(x=10, y=45)
+        
+        ctk.CTkLabel(master=frame_4, text="Дата выдачи", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=130,y=25)
+        self.d_poluch = ctk.CTkEntry(master=frame_4, width=80, height=20)
+        self.d_poluch.insert(0, self.model.data[__row_click__][18])
+        self.d_poluch.place(x=130, y=45)
+        
+        ctk.CTkLabel(master=frame_4, text="Страна выдачи", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=230,y=25)
+        self.str_poluch = ctk.CTkEntry(master=frame_4, width=80, height=20)
+        self.str_poluch.insert(0, self.model.data[__row_click__][44])
+        self.str_poluch.place(x=230, y=45)
+        
+        ctk.CTkLabel(master=frame_4, text="Город выдачи", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=340,y=25)
+        self.city_poluch = ctk.CTkEntry(master=frame_4, width=80, height=20)
+        self.city_poluch.insert(0, self.model.data[__row_click__][45])
+        self.city_poluch.place(x=340, y=45)
+        
+        ctk.CTkLabel(master=frame_4, text="Индентификационный номер", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=450,y=25)
+        self.vis_id = ctk.CTkEntry(master=frame_4, width=150, height=20)
+        self.vis_id.insert(0, self.model.data[__row_click__][34])
+        self.vis_id.place(x=450, y=45)
+              
+        ctk.CTkLabel(master=frame_4, text="Номер приглашения", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=650,y=25)
+        self.num_prig = ctk.CTkEntry(master=frame_4, width=150, height=20)
+        self.num_prig.insert(0, self.model.data[__row_click__][46])
+        self.num_prig.place(x=650, y=45)
+        
+        ctk.CTkLabel(master=frame_4, text="Серия", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=75)
+        self.vis_ser = ctk.CTkEntry(master=frame_4, width=80, height=20)
+        self.vis_ser.insert(0, self.model.data[__row_click__][16])
+        self.vis_ser.place(x=10, y=95)
+              
+        ctk.CTkLabel(master=frame_4, text="Номер", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=100,y=75)
+        self.vis_num = ctk.CTkEntry(master=frame_4, width=80, height=20)
+        self.vis_num.insert(0, self.model.data[__row_click__][17])
+        self.vis_num.place(x=100, y=95)
+        
+        ctk.CTkLabel(master=frame_4, text="Срок действия: c", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=200,y=95)
+        self.vis_start = ctk.CTkEntry(master=frame_4, width=80, height=20)
+        self.vis_start.insert(0, self.model.data[__row_click__][18])
+        self.vis_start.place(x=308, y=95)
+        ctk.CTkLabel(master=frame_4, text="по", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=396,y=95)
+        self.vis_end = ctk.CTkEntry(master=frame_4, width=80, height=20)
+        self.vis_end.insert(0, self.model.data[__row_click__][19])
+        self.vis_end.place(x=420, y=95)
+        
+        frame_5 = ctk.CTkFrame(master=self.scroll_frame_editing, height=80, fg_color=white)
+        frame_5.pack(padx=5, pady=[1,4], anchor="nw", fill="x")
+        
+        ctk.CTkLabel(master=frame_5, text="МИГРАЦИОННАЯ КАРТА", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=5)
+
+        ctk.CTkLabel(master=frame_5, text="Серия", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=25)
+        self.mcs = ctk.CTkEntry(master=frame_5, width=70, height=20)
+        self.mcs.insert(0, self.model.data[__row_click__][23])
+        self.mcs.place(x=5, y=45)
+        
+        ctk.CTkLabel(master=frame_5, text="Номер", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=80,y=25)
+        self.mcn = ctk.CTkEntry(master=frame_5, width=85, height=20)
+        self.mcn.insert(0, self.model.data[__row_click__][24])
+        self.mcn.place(x=80, y=45)
+        
+        ctk.CTkLabel(master=frame_5, text="КПП", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=176, y=25)
+        self.kpp = ctk.CTkEntry(master=frame_5, width=150, height=20)
+        self.kpp.insert(0, self.model.data[__row_click__][47])
+        self.kpp.place(x=176, y=45)
+        
+        ctk.CTkLabel(master=frame_5, text="Дата въезда в РФ", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=335,y=25)
+        self.d_enter = ctk.CTkEntry(master=frame_5,  width=80, height=20)
+        self.d_enter.insert(0, self.model.data[__row_click__][21])
+        self.d_enter.place(x=335, y=45)
+
+        frame_6 = ctk.CTkFrame(master=self.scroll_frame_editing, height=105, fg_color=white)
+        frame_6.pack(padx=5, pady=[1,4], anchor="nw", fill="x")
+        
+        ctk.CTkLabel(master=frame_6, text="ГРАЖДАНСТВО РФ", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=5)
+
+        ctk.CTkLabel(master=frame_6, text="Вид:", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=25)
+        self.rf = ctk.CTkComboBox(master=frame_6, values=["ВНЖ", "РВПО", "нет"], width=110, height=20)
+        self.rf.configure(variable=ctk.StringVar(value=self.model.data[__row_click__][28]))
+        self.rf.place(x=50, y=25)
+        
+        ctk.CTkLabel(master=frame_6, text="Серия", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=50)
+        self.ser = ctk.CTkEntry(master=frame_6, placeholder_text="12", width=70, height=20)
+        self.ser.insert(0, self.model.data[__row_click__][31])
+        self.ser.place(x=5, y=70)
+        
+        ctk.CTkLabel(master=frame_6, text="Номер", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=80,y=50)
+        self.nmr = ctk.CTkEntry(master=frame_6, width=85, height=20)
+        self.nmr.insert(0, self.model.data[__row_click__][32])
+        self.nmr.place(x=80, y=70)
+        
+        ctk.CTkLabel(master=frame_6, text="Дата выдачи", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=176, y=50)
+        self.rfd = ctk.CTkEntry(master=frame_6, width=80, height=20)
+        self.rfd.insert(0, self.model.data[__row_click__][29])
+        self.rfd.place(x=176, y=70)
+        
+        ctk.CTkLabel(master=frame_6, text="Дата окончания", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=270,y=50)
+        self.mot = ctk.CTkEntry(master=frame_6,  width=80, height=20)
+        self.mot.insert(0, self.model.data[__row_click__][49])
+        self.mot.place(x=270, y=70)
+
+        frame_7 = ctk.CTkFrame(master=self.scroll_frame_editing, height=140, fg_color=white)
+        frame_7.pack(padx=5, pady=[1,4], anchor="nw", fill="x")
+        
+        ctk.CTkLabel(master=frame_7, text="ОБУЧЕНИЕ", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=5)
+
+        ctk.CTkLabel(master=frame_7, text="Статус", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=25)
+        self.uch_st_st = ctk.CTkComboBox(master=frame_7, values=["Студент", "Аспирант", "Отчислен"], width=90, height=20)
+        self.uch_st_st.configure(variable=ctk.StringVar(value=self.model.data[__row_click__][50]))
+        self.uch_st_st.place(x=10, y=45)
+        
+        ctk.CTkLabel(master=frame_7, text="Программа", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=105,y=25)
+        self.pr = ctk.CTkComboBox(master=frame_7, values=["бак", "маг", "спец"], width=80, height=20)
+        self.pr.configure(variable=ctk.StringVar(value=self.model.data[__row_click__][51]))
+        self.pr.place(x=105, y=45)
+        
+        ctk.CTkLabel(master=frame_7, text="Форма", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=205,y=25)
+        self.fr = ctk.CTkEntry(master=frame_7, width=96, height=20)
+        self.fr.insert(0, self.model.data[__row_click__][52])
+        self.fr.place(x=205, y=45)
+
+        ctk.CTkLabel(master=frame_7, text="Направление", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=310,y=25)
+        self.gos_nap = ctk.CTkComboBox(master=frame_7, values=["гос. направление", "контракт", "приказ (с РФ)"], width=140, height=20)
+        self.gos_nap.configure(variable=ctk.StringVar(value=self.model.data[__row_click__][35]))
+        self.gos_nap.place(x=310, y=45)
+        
+        ctk.CTkLabel(master=frame_7, text="Номер договора", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=470,y=25)
+        self.kontrakt = ctk.CTkEntry(master=frame_7, placeholder_text="HTI-10082/24", width=96, height=20)
+        self.kontrakt.insert(0, self.model.data[__row_click__][37])
+        self.kontrakt.place(x=470, y=45)
+        
+        ctk.CTkLabel(master=frame_7, text="Специальность", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=590,y=25)
+        self.o_p = ctk.CTkEntry(master=frame_7, placeholder_text="Менеджмент", width=200, height=20)
+        self.o_p.insert(0, self.model.data[__row_click__][53])
+        self.o_p.place(x=590, y=45)
+
+        ctk.CTkLabel(master=frame_7, text="Срок обучения: c", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=75)
+        self.kont_start = ctk.CTkEntry(master=frame_7,  width=80, height=20)
+        self.kont_start.insert(0, self.model.data[__row_click__][38])
+        self.kont_start.place(x=120, y=75)
+        
+        ctk.CTkLabel(master=frame_7, text="по", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=205,y=75)
+        self.kont_end = ctk.CTkEntry(master=frame_7,  width=80, height=20)
+        self.kont_end.insert(0, self.model.data[__row_click__][39])
+        self.kont_end.place(x=225, y=75)
+
+        ctk.CTkLabel(master=frame_7, text="Приказ №", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=105)
+        self.prikaz = ctk.CTkEntry(master=frame_7,  width=80, height=20)
+        self.prikaz.insert(0, self.model.data[__row_click__][54])
+        self.prikaz.place(x=80, y=105)
+        ctk.CTkLabel(master=frame_7, text="от", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=165,y=105)
+        self.prik_start = ctk.CTkEntry(master=frame_7,  width=80, height=20)
+        self.prik_start.insert(0, self.model.data[__row_click__][55])
+        self.prik_start.place(x=185, y=105)
+        
+        ctk.CTkLabel(master=frame_7, text="статус", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=275,y=105)
+        self.o_s = ctk.CTkEntry(master=frame_7,  width=150, height=20)
+        self.o_s.insert(0, self.model.data[__row_click__][56])
+        self.o_s.place(x=320, y=105)
+        
+        frame_8 = ctk.CTkFrame(master=self.scroll_frame_editing, height=135, fg_color=white)
+        frame_8.pack(padx=5, pady=[1,4], anchor="nw", fill="x")
+        
+        ctk.CTkLabel(master=frame_8, text="ОБЩЕЖИТИЕ", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=5)
+        
+        ctk.CTkLabel(master=frame_8, text="Догвор найма №", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=35)
+        self.dog_obsh = ctk.CTkEntry(master=frame_8,  width=100, height=20)
+        self.dog_obsh.insert(0, self.model.data[__row_click__][27])
+        self.dog_obsh.place(x=115, y=35)
+        ctk.CTkLabel(master=frame_8, text="с", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=220,y=35)
+        self.dnd = ctk.CTkEntry(master=frame_8,  width=80, height=20)
+        self.dnd.insert(0, self.model.data[__row_click__][26])
+        self.dnd.place(x=235, y=35)
+        ctk.CTkLabel(master=frame_8, text="по", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=320,y=35)
+        self.d_naym = ctk.CTkEntry(master=frame_8,  width=80, height=20)
+        self.d_naym.insert(0, self.model.data[__row_click__][57])
+        self.d_naym.place(x=340, y=35)
+        
+        ctk.CTkLabel(master=frame_8, text="Адрес:", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=65)
+        self.addres = ctk.CTkEntry(master=frame_8,  width=300, height=20)
+        self.addres.insert(0,"Г. МОСКВА, КОЧНОВСКИЙ ПР., Д.7")
+        self.addres.place(x=55, y=65)
+        
+        ctk.CTkLabel(master=frame_8, text="Комната:", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=380,y=65)
+        self.k = ctk.CTkEntry(master=frame_8,  width=50, height=20)
+        self.k.insert(0, self.model.data[__row_click__][25])
+        self.k.place(x=440, y=65)
+        
+        ctk.CTkLabel(master=frame_8, text="Прежний адрес:", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=95)
+        self.star = ctk.CTkEntry(master=frame_8,  width=400, height=20)
+        self.star.insert(0, self.model.data[__row_click__][42])
+        self.star.place(x=110, y=95)
+        
+        frame_9 = ctk.CTkFrame(master=self.scroll_frame_editing, height=150, fg_color=white)
+        frame_9.pack(padx=5, pady=[1,4], anchor="nw", fill="x")
+        
+        ctk.CTkLabel(master=frame_9, text="ПРИМЕЧАНИЕ", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=5)
+        
+        ctk.CTkLabel(master=frame_9, text="e-mail:", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=35)
+        self.email = ctk.CTkEntry(master=frame_9,  width=300, height=20)
+        self.email.insert(0, self.model.data[__row_click__][58])
+        self.email.place(x=50, y=35)
+        
+        ctk.CTkLabel(master=frame_9, text="Телефон:", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=370,y=35)
+        self.tel_nom = ctk.CTkEntry(master=frame_9,  width=110, height=20)
+        self.tel_nom.insert(0, self.model.data[__row_click__][20])
+        self.tel_nom.place(x=430, y=35)
+        
+        ctk.CTkLabel(master=frame_9, text="Примечание:", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=65)
+        self.prim = ctk.CTkEntry(master=frame_9,  width=1000, height=60)
+        self.prim.insert(0, self.model.data[__row_click__][59])
+        self.prim.place(x=10, y=85)
+        
+        
+        ctk.CTkButton(self.frame_editing, text="Сохранить изменения", text_color=blue, 
+                      fg_color=white, width=50, height=30, command=self.click_on_save).pack(anchor="w",padx=10, pady=5)
+        ctk.CTkButton(self.frame_editing, text="Сформировать в Excel", text_color=blue,
+                       fg_color=white, command=self.click_form_excel).pack(anchor="w",padx=10, pady=5)
+        ctk.CTkButton(self.frame_editing, text="Сформировать уведомление", text_color=blue,
+                       fg_color=white, command=self.click_form_Word).pack(anchor="w",padx=10, pady=5)
+
 
 
     def do_lable(self, text, x, y, bg_color, fg_color, text_color):
@@ -522,6 +844,11 @@ class WindowInformation(ctk.CTkToplevel):
 
     def click_form_Word(self):
         WindowSaveWord(self, self.model)
+
+    def click_on_save(self):
+        self.model.process_update_database(self, __row_click__)
+        self.parent.frame_table.place_forget()
+        self.destroy()
 
 class WindowCheckGosuslugi(ctk.CTkToplevel):
 
@@ -857,3 +1184,4 @@ def full_screen(self):
     screen_width = self.winfo_screenwidth()
     screen_height = self.winfo_screenheight()
     self.geometry(f"{screen_width}x{screen_height}+0+0")
+    
