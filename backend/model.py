@@ -658,7 +658,7 @@ class Model():
         self.append_change(window.och.get(), row, 4)
         self.append_change(window.oche.get(), row, 5)
         self.append_change(window.ctz1.get(), row, 6)
-        self.append_change(datetime.strptime(window.dob.get(), "%d.%m.%Y"), row, 7)
+        self.append_change(window.dob.get(), row, 7)
         self.append_change(window.sex.get(), row, 8)
         self.append_change(window.pob.get(), row, 9)
         self.append_change(window.cob.get(), row, 10)
@@ -718,10 +718,15 @@ class Model():
         if value == '':
             self.data_update.append(self.data[row][col])
         else: 
+            if isinstance(value, datetime):
+                value = datetime.strptime(self.data_update[row][col], "%d.%m.%Y")
             self.data_update.append(value)
 
     def check_update_database(self, row):
         for i, var in enumerate(self.data_update):
+            # if isinstance(var, datetime) and var != '':
+            #     print()
+            #     var = datetime.strptime(self.data_update[i], "%d.%m.%Y")
             if var == self.data[row][i]:
                 self.data_update[i] = ''
         print(self.data_update)
