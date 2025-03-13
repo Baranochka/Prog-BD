@@ -331,7 +331,6 @@ def update_person(
     parameters = []
     updates = []
     update_par = [
-        f"{PersonsField.id}",
         f"{PersonsField.surname}",
         f"{PersonsField.surname_in_latin}",
         f"{PersonsField.name}",
@@ -392,6 +391,7 @@ def update_person(
         f"{PersonsField.termination_date_of_the_employment_contract}",
         f"{PersonsField.email}",
         f"{PersonsField.note}",
+        f"{PersonsField.id}"
     ]
 
     for i, field in enumerate(update_par):
@@ -400,7 +400,7 @@ def update_person(
             parameters.append(model.data_update[i])
 
     # Формируем запрос
-    query += ", ".join(updates) + f" WHERE {PersonsField.id} = {id}"
+    query += " ".join(updates) + f" WHERE {PersonsField.id} = {id}"
 
     # Выводим для отладки (если нужно)
     debug(query)

@@ -623,7 +623,11 @@ class Model():
 
     def process_update_database(self, window, row):
         self.copy_change_to_data_update(window, row)
-        self.db.update_person(model = self, surname = self.data[row][1], name = self.data[row][3] )
+        # for i, var in enumerate(self.data[0]):
+        #     print(i, var)
+            
+        database.update_person(self.data[row][60], self)
+        # self.db.update_person(model = self, surname = self.data[row][1], name = self.data[row][3] )
 
     def copy_change_to_data_update(self, window, row):
         self.data_update.clear()
@@ -688,7 +692,7 @@ class Model():
         self.append_change(window.d_naym.get(), row, 57)
         self.append_change(window.email.get(), row, 58)
         self.append_change(window.prim.get(), row, 59)
-
+        self.append_change('', row, 60)
         self.check_update_database(row)
 
     def append_change(self, value, row, col):
