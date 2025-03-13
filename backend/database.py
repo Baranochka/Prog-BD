@@ -207,15 +207,10 @@ class PersonsField:
     note = "prim"  # Поле 'Примечание'.
 
 
-def execute_query(query: str) :
+def execute_query(query: str) -> ...:
     """Базовая функция, осуществляющая подключение к БД и исполняющая запрос."""
     try:
         with Session(engine) as session:
-           
-
-            if ...:
-                ...
-
             debug(f"Выполнение запроса '{query}'...")
 
             result = session.execute(text(query))
@@ -261,17 +256,12 @@ BASE_QUERY = (
 
 
 def fetch_person_by(
-    logical_operator: str = "AND",
     **kwargs: Union[str, None],
 ) :
     """
     Функция для получения данных о студенте.
     По умолчанию стоит точный фильтр.
     """
-    if logical_operator not in ["AND", "OR"]:
-        raise ValueError("logical_operator must be 'AND' or 'OR'")
-
-
 
     conditions = []
     debug_messages = []
@@ -307,12 +297,12 @@ def fetch_person_by(
                     conditions.append(f"{PersonsField.birthdate} = '{value}'")
                     debug_messages.append(f"Fetching person by birthdate: '{value}'")
     if conditions:
-        query = f"SELECT {BASE_QUERY} FROM persons WHERE " + f" {logical_operator} ".join(
+        query = f"SELECT {BASE_QUERY} FROM persons WHERE " + f" AND ".join(
             conditions
         )
         for message in debug_messages:
             debug(message)
-        
+
         result = execute_query(query)
         new_data = []
 
@@ -423,6 +413,96 @@ def update_person(
 def check_rus_eng(text: str) -> bool:
     """Проверка текста на кириллицу."""
     return bool(regexp.search(r"[а-яА-ЯёЁ]", text))
+
+
+def get_person_for_check(
+    surname: Optional[str] = None,
+    name: Optional[str] = None,
+    patronymic: Optional[str] = None,
+    birthdate: Optional[datetime] = None,
+) -> Optional[List[List[str]]]:
+    # Начинаем с базового запроса
+    fields = "fru, last_lat, name_rus, nla, dob, pas_ser, pas_num, pds"
+
+    conditions = []
+    debug_messages = []
+
+    if surname is not None:
+        if check_rus_eng(surname):
+            conditions.append(f"{PersonsField.surname} = '{surname}'")
+            debug_messages.append(f"Fetching person by surname: '{surname}'")
+        else:
+            conditions.append(f"{PersonsField.surname_in_latin} = '{surname}'")
+            debug_messages.append(f"Fetching person by surname: '{surname}'")
+
+    if name is not None:
+        if check_rus_eng(name):
+            conditions.append(f"{PersonsField.name} = '{name}'")
+            debug_messages.append(f"Fetching person by name: '{name}'")
+        else:
+            conditions.append(f"{PersonsField.name_in_latin} = '{name}'")
+            debug_messages.append(f"Fetching person by birthdate: '{name}'")
+
+    if patronymic is not None:
+        if check_rus_eng(patronymic):
+            conditions.append(f"{PersonsField.patronymic} = '{patronymic}'")
+            debug_messages.append(f"Fetching person by patronymic: '{patronymic}'")
+        else:
+            conditions.append(f"{PersonsField.patronymic_in_latin} = '{patronymic}'")
+            debug_messages.append(f"Fetching person by birthdate: '{patronymic}'")
+
+    if birthdate is not None:
+        if birthdate != datetime(1900, 1, 1):
+            conditions.append(f"{PersonsField.birthdate} = '{birthdate}'")
+            debug_messages.append(f"Fetching person by birthdate: '{birthdate}'")
+
+    if conditions:
+        try:
+            query = f"SELECT {fields} FROM persons WHERE " + f" AND ".join(
+                conditions
+            )
+            for message in debug_messages:
+                debug(message)
+
+            result = execute_query(query)
+            new_data = []
+
+            for row in result:
+                new_row = []
+                for i, field in enumerate(row):
+                    if isinstance(field, datetime):
+                        new_row.append(field.strftime("%d.%m.%Y"))
+                    else:
+                        new_row.append(str(field).strip() if field is not None else "")
+                new_data.append(new_row)
+
+            return new_data
+
+        except Exception as e:
+            debug(f"Ошибка при получении даных о студенте: {e}")
+            return None
+
+def get_all_rows_for_check() -> ...:
+    try:
+        query = "SELECT fru, last_lat, name_rus, nla, dob, pas_ser, pas_num, pds FROM persons"
+        result = execute_query(query)
+
+        new_data = []
+
+        for row in result:
+            new_row = []
+            for i, field in enumerate(row):
+                if isinstance(field, datetime):
+                    new_row.append(field.strftime("%d.%m.%Y"))
+                else:
+                    new_row.append(str(field).strip() if field is not None else "")
+            new_data.append(new_row)
+
+        return new_data
+    except Exception as e:
+        debug(f"Ошибка при получении данных: {e}")
+        return None
+
 
 if __name__ == "__main__":
     print(fetch_all_data())
