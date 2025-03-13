@@ -42,6 +42,7 @@ def create_database_config(section: str, config: ConfigParser):
     """Функция для создания конфигурации БД."""
     driver = config.get(section, "DRIVER")
     database_name = config.get(section, "DATABASE_NAME")
+    print(database_name)
     username = config.get(section, "USERNAME")
     password = config.get(section, "PASSWORD")
 
@@ -79,24 +80,24 @@ class BaseDatabaseConfig:
 class DevelopmentDatabaseConfig(BaseDatabaseConfig):
     """Класс-конфигурация БД для разработки."""
 
-    CONFIG_PATH = Path(__file__).resolve().parent / "config.ini"
-    config = ConfigParser()
-    config.read(CONFIG_PATH)
-
-    section = "TEST"
-    connection_url: URL = BaseDatabaseConfig.create(section, config).connection_url
-
-
-@dataclass(frozen=True)
-class ProductionDatabaseConfig(BaseDatabaseConfig):
-    """Класс-конфигурация БД для продуктивной среды."""
-
     CONFIG_PATH = Path(__file__).resolve().parent / "config" / "config.ini"
     config = ConfigParser()
     config.read(CONFIG_PATH)
-
-    section = "SQL Server"
+    print(CONFIG_PATH)
+    section = "Test_Maks"
     connection_url: URL = BaseDatabaseConfig.create(section, config).connection_url
+
+
+# @dataclass(frozen=True)
+# class ProductionDatabaseConfig(BaseDatabaseConfig):
+#     """Класс-конфигурация БД для продуктивной среды."""
+
+#     CONFIG_PATH = Path(__file__).resolve().parent / "config" / "config.ini"
+#     config = ConfigParser()
+#     config.read(CONFIG_PATH)
+
+#     section = "SQL Server"
+#     connection_url: URL = BaseDatabaseConfig.create(section, config).connection_url
 
 
 engine = create_engine(DevelopmentDatabaseConfig.connection_url)
@@ -191,29 +192,27 @@ class PersonsField:
     note = "prim"  # Поле 'Примечание'.
 
 
-def execute_query(query: str) -> Optional[Sequence[Row[Tuple[Any, ...] | Any]]]:
+def execute_query(query: str) :
     """Базовая функция, осуществляющая подключение к БД и исполняющая запрос."""
-    try:
-        with Session(engine) as session:
-            debug(
-                f"Подключение к базе данных '{DevelopmentDatabaseConfig.DATABASE_NAME}'..."
-            )
-
-            if ...:
-                ...
-
-            debug(f"Выполнение запроса '{query}'...")
-
-            result = session.execute(text(query))
-
-            debug(f"Успешное выполнение запроса '{query}'...")
-            return result.all()
-    except Exception as e:
-        debug(f"Ошибка '{e}...'")
-        return None
+    # try:
+    with Session(engine) as session:
 
 
-def fetch_all_data() -> Optional[Sequence[Row[Tuple[Any, ...] | Any]]]:
+        if ...:
+            ...
+
+        debug(f"Выполнение запроса '{query}'...")
+
+        result = session.execute(text(query))
+
+        debug(f"Успешное выполнение запроса '{query}'...")
+        return result.all()
+    # except Exception as e:
+        # debug(f"Ошибка '{e}...'")
+        # return None
+
+
+def fetch_all_data():
     """Получение всех данных из БД."""
     return execute_query("SELECT * FROM persons")
 
@@ -221,7 +220,7 @@ def fetch_all_data() -> Optional[Sequence[Row[Tuple[Any, ...] | Any]]]:
 def fetch_person_by(
     logical_operator: str = "AND",
     **kwargs: Union[str, None],
-) -> Optional[Sequence[Row[Tuple[Any, ...] | Any]]]:
+) :
     """
     Функция для получения данных о студенте.
     По умолчанию стоит точный фильтр.
@@ -438,3 +437,7 @@ def update_person(
 
     # Выполняем запрос
     execute_query(query)
+
+
+if __name__ == "__main__":
+    print(fetch_all_data())
