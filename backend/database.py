@@ -13,6 +13,8 @@ from configparser import ConfigParser
 
 from dataclasses import dataclass
 
+engine = None
+
 HOSTNAME = gethostname()
 
 
@@ -38,13 +40,12 @@ def get_connection_string(
     )
 
 
-def create_database_config(section: str, config: ConfigParser):
+def create_database_config(section: str, config: ConfigParser,  user, passw):
     """Функция для создания конфигурации БД."""
     driver = config.get(section, "DRIVER")
     database_name = config.get(section, "DATABASE_NAME")
-    print(database_name)
-    username = config.get(section, "USERNAME")
-    password = config.get(section, "PASSWORD")
+    username = user
+    password = passw
 
     connection_string = get_connection_string(
         driver,
@@ -62,30 +63,32 @@ def create_database_config(section: str, config: ConfigParser):
     return connection_url
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class BaseDatabaseConfig:
     """Базовый класс конфигурации БД."""
 
     section: str
     connection_url: URL
+    username: str
+    password: str
 
     @classmethod
-    def create(cls, section: str, config: ConfigParser):
+    def create(cls, section: str, config: ConfigParser, username, password):
         """Создает экземпляр класса с нужной конфигурацией."""
-        connection_url = create_database_config(section, config)
-        return cls(section=section, connection_url=connection_url)
+        connection_url = create_database_config(section, config, username, password)
+        return cls(section=section, connection_url=connection_url, username=username, password=password)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class DevelopmentDatabaseConfig(BaseDatabaseConfig):
-    """Класс-конфигурация БД для разработки."""
+    def __init__(self, username, password):
+        """Класс-конфигурация БД для разработки."""
+        CONFIG_PATH = Path(__file__).resolve().parent / "config" / "config.ini"
+        config = ConfigParser()
+        config.read(CONFIG_PATH)
 
-    CONFIG_PATH = Path(__file__).resolve().parent / "config" / "config.ini"
-    config = ConfigParser()
-    config.read(CONFIG_PATH)
-    print(CONFIG_PATH)
-    section = "Test_Maks"
-    connection_url: URL = BaseDatabaseConfig.create(section, config).connection_url
+        section = "Test_Maks"
+        self.connection_url: URL = BaseDatabaseConfig.create(section, config, username, password).connection_url
 
 
 # @dataclass(frozen=True)
@@ -99,9 +102,21 @@ class DevelopmentDatabaseConfig(BaseDatabaseConfig):
 #     section = "SQL Server"
 #     connection_url: URL = BaseDatabaseConfig.create(section, config).connection_url
 
+def start_session(username, password):
+    """Функция для создания сессии с БД."""
+    data_config = DevelopmentDatabaseConfig(username, password)
+    global engine
+    engine = create_engine(data_config.connection_url)
 
-engine = create_engine(DevelopmentDatabaseConfig.connection_url)
-
+def check_connection():
+    """Проверка соединения с БД."""
+    try:
+        with Session(engine) as session:
+            session.execute(text("SELECT * FROM persons"))
+        return True
+    except Exception as e:
+        debug(f"Ошибка: {e}")
+        return False
 
 @dataclass(frozen=True)
 class PersonsField:
@@ -194,27 +209,55 @@ class PersonsField:
 
 def execute_query(query: str) :
     """Базовая функция, осуществляющая подключение к БД и исполняющая запрос."""
-    # try:
-    with Session(engine) as session:
+    try:
+        with Session(engine) as session:
+           
+
+            if ...:
+                ...
+
+            debug(f"Выполнение запроса '{query}'...")
+
+            result = session.execute(text(query))
+
+            debug(f"Успешное выполнение запроса '{query}'...")
+            return result.all()
+    except Exception as e:
+        debug(f"Ошибка '{e}...'")
+        return None
 
 
-        if ...:
-            ...
-
-        debug(f"Выполнение запроса '{query}'...")
-
-        result = session.execute(text(query))
-
-        debug(f"Успешное выполнение запроса '{query}'...")
-        return result.all()
-    # except Exception as e:
-        # debug(f"Ошибка '{e}...'")
-        # return None
-
-
-def fetch_all_data():
+def fetch_all_data() :
     """Получение всех данных из БД."""
-    return execute_query("SELECT * FROM persons")
+    result = execute_query("SELECT * FROM persons")
+    new_data = []
+
+    for row in result:
+        new_row = []
+        for i, field in enumerate(row):
+            if isinstance(field, datetime):
+                new_row.append(field.strftime("%d.%m.%Y"))
+            else:
+                new_row.append(str(field).strip() if field is not None else "")
+        new_data.append(new_row)
+
+    return new_data
+
+BASE_QUERY = (
+        "fru, last_lat, name_rus, nla, och, "
+        "oche, ctz1, dob, sex, pob, "
+        "cob, pas_ser, pas_num, pds, pde, "
+        "visa_priz, vis_ser, vis_num, vis_start, vis_end, "
+        "tel_nom, d_enter, date_okon, mcs, mcn, "
+        "k, dnd, dog_obsh, rf, rfd, "
+        "mot, ser, nmr, vis_krat, vis_id, "
+        "gos_nap, proz, kontrakt, kont_start, kont_end, "
+        "gos_start, gos_end, star, d_poluch, str_poluch,"
+        "city_poluch, num_prig, kpp, med, dak, "
+        "uch_st_st, pr, fr, o_p, prikaz, "
+        "prik_start, o_s, d_naym, email, prim, "
+        "num "
+    )
 
 
 def fetch_person_by(
@@ -228,126 +271,64 @@ def fetch_person_by(
     if logical_operator not in ["AND", "OR"]:
         raise ValueError("logical_operator must be 'AND' or 'OR'")
 
+
+
     conditions = []
     debug_messages = []
 
     for key, value in kwargs.items():
         if value is not None:  # Проверяем, что значение не None
             if key == "surname":
-                conditions.append(f"{PersonsField.surname} = '{value}'")
-                debug_messages.append(f"Fetching person by surname: '{value}'")
+                if check_rus_eng(value):
+                    conditions.append(f"{PersonsField.surname} = '{value}'")
+                    debug_messages.append(f"Fetching person by surname: '{value}'")
+                else:
+                    conditions.append(f"{PersonsField.surname_in_latin} = '{value}'")
+                    debug_messages.append(f"Fetching person by surname: '{value}'")
 
             elif key == "name":
-                conditions.append(f"{PersonsField.name} = '{value}'")
-                debug_messages.append(f"Fetching person by name: '{value}'")
+                if check_rus_eng(value):
+                    conditions.append(f"{PersonsField.name} = '{value}'")
+                    debug_messages.append(f"Fetching person by name: '{value}'")
+                else:
+                    conditions.append(f"{PersonsField.name_in_latin} = '{value}'")
+                    debug_messages.append(f"Fetching person by birthdate: '{value}'")
 
             elif key == "patronymic":
-                conditions.append(f"{PersonsField.patronymic} = '{value}'")
-                debug_messages.append(f"Fetching person by patronymic: '{value}'")
+                if check_rus_eng(value):
+                    conditions.append(f"{PersonsField.patronymic} = '{value}'")
+                    debug_messages.append(f"Fetching person by patronymic: '{value}'")
+                else:
+                    conditions.append(f"{PersonsField.patronymic_in_latin} = '{value}'")
+                    debug_messages.append(f"Fetching person by birthdate: '{value}'")
 
             elif key == "birthdate":
-                conditions.append(f"{PersonsField.birthdate} = '{value}'")
-                debug_messages.append(f"Fetching person by birthdate: '{value}'")
-
+                if value != datetime(1900, 1, 1):
+                    conditions.append(f"{PersonsField.birthdate} = '{value}'")
+                    debug_messages.append(f"Fetching person by birthdate: '{value}'")
     if conditions:
-        query = "SELECT * FROM persons WHERE " + f" {logical_operator} ".join(
+        query = f"SELECT {BASE_QUERY} FROM persons WHERE " + f" {logical_operator} ".join(
             conditions
         )
         for message in debug_messages:
             debug(message)
-        return execute_query(query)
+        
+        result = execute_query(query)
+        new_data = []
+
+        for row in result:
+            new_row = []
+            for i, field in enumerate(row):
+                if isinstance(field, datetime):
+                    new_row.append(field.strftime("%d.%m.%Y"))
+                else:
+                    new_row.append(str(field).strip() if field is not None else "")
+            new_data.append(new_row)
+
+        return new_data
 
     return None
 
-
-BASE_QUERY = (
-    "SELECT "
-    "fru, last_lat, name_rus, nla, och, "
-    "oche, ctz1, dob, sex, pob, "
-    "cob, pas_ser, pas_num, pds, pde, "
-    "visa_priz, vis_ser, vis_num, d_poluch, vis_end, "
-    "tel_nom, d_enter, date_okon, mcs, mcn, "
-    "k, dnd, dog_obsh, rf, rfd, "
-    "mot, ser, nmr, vis_krat, vis_id, "
-    "gos_nap, proz, kontrakt, kont_start, kont_end, "
-    "gos_start, gos_end, star, d_poluch, str_poluch,"
-    "city_poluch, num_prig, kpp, med, mot, "
-    "uch_st_st, pr, fr, o_p, prikaz, "
-    "prik_start, o_s, d_naym, email, prim "
-    "FROM persons"
-)
-
-
-def check_rus_eng(text: str) -> bool:
-    """Проверка текста на кириллицу."""
-    return bool(regexp.search(r"[а-яА-ЯёЁ]", text))
-
-
-def fetch_person(
-    surname: Optional[str],
-    name: Optional[str],
-    patronymic: Optional[str],
-    birthdate: Optional[datetime],
-) -> Optional[List[List[str]]]:
-    query = BASE_QUERY
-
-    # Список условий и параметров
-    conditions = []
-    parameters = []
-
-    # Добавляем условия в зависимости от переданных аргументов
-    if surname is not None:
-        parameters.append(surname)
-
-        if check_rus_eng(surname):
-            conditions.append(f"{PersonsField.surname} = ?")
-        else:
-            conditions.append(f"{PersonsField.surname_in_latin} = ?")
-
-    if name is not None:
-        parameters.append(name)
-
-        if check_rus_eng(name):
-            conditions.append(f"{PersonsField.name} = ?")
-        else:
-            conditions.append(f"{PersonsField.name_in_latin} = ?")
-
-    if patronymic is not None:
-        parameters.append(patronymic)
-
-        if check_rus_eng(patronymic):
-            conditions.append(f"{PersonsField.patronymic} = ?")
-        else:
-            conditions.append(f"{PersonsField.patronymic_in_latin} = ?")
-
-    if birthdate != datetime(1900, 1, 1):
-        conditions.append(f"{PersonsField.birthdate} = ?")
-        parameters.append(birthdate)
-
-    # Если есть условия, добавляем их к запросу
-    if conditions:
-        # query += " WHERE " + " OR ".join(conditions)
-        query += f" WHERE {' AND '.join(conditions)}"
-
-    # Выполняем запрос и возвращаем его
-    result = execute_query(query)
-    new_data = []
-
-    for row in result:
-        new_row = []
-        for i, field in enumerate(row):
-            if isinstance(field, datetime) or i in [4, 7]:
-                if field is None:
-                    # new_row.append("          ")
-                    new_row.append(" " * 10)
-                else:
-                    date = field.strftime("%d%m%Y")  # Форматируем
-                    new_row.append(date)
-            else:
-                new_row.append(str(field).strip() if field is not None else "")
-        new_data.append(new_row)
-
-    return new_data
 
 
 def update_person(
@@ -438,6 +419,10 @@ def update_person(
     # Выполняем запрос
     execute_query(query)
 
+
+def check_rus_eng(text: str) -> bool:
+    """Проверка текста на кириллицу."""
+    return bool(regexp.search(r"[а-яА-ЯёЁ]", text))
 
 if __name__ == "__main__":
     print(fetch_all_data())
