@@ -251,21 +251,21 @@ class MSSQL(Database):
             return None
 
     def update_person(self, model=None,  surname=None, name=None, och=None, birthdate=None):
-        
-        
+
+
         query = "UPDATE persons SET "
-        
+
         parameters = []
         updates = []
-        update_par = ['fru = ?', 'last_lat = ?', 'name_rus = ?', 'nla = ?', 'och = ?', 'oche = ?', 'ctz1 = ?', 'dob = ?', 'sex = ?', 'pob = ?', 
-                   'cob = ?', 'pas_ser = ?', 'pas_num = ?', 'pds = ?', 'pde = ?', 'visa_priz = ?', 'vis_ser = ?', 'vis_num = ?', 
-                    'vis_start = ?', 'vis_end = ?', 'tel_nom = ?', 'd_enter = ?', 'date_okon = ?', 'mcs = ?', 'mcn = ?', 'k = ?', 
-                   'dnd = ?', 'dog_obsh = ?', 'rf = ?', 'rfd = ?', 'mot = ?', 'ser = ?', 'nmr = ?', 'vis_krat = ?', 'vis_id = ?', 
-                   'gos_nap = ?', 'proz = ?', 'kontrakt = ?', 'kont_start = ?', 'kont_end = ?', 'gos_start = ?', 'gos_end = ?', 
-                   'star = ?', 'd_poluch = ?', 'str_poluch = ?', 'city_poluch = ?', 'num_prig = ?', 'kpp = ?', 'med = ?', 'mot = ?', 
+        update_par = ['fru = ?', 'last_lat = ?', 'name_rus = ?', 'nla = ?', 'och = ?', 'oche = ?', 'ctz1 = ?', 'dob = ?', 'sex = ?', 'pob = ?',
+                   'cob = ?', 'pas_ser = ?', 'pas_num = ?', 'pds = ?', 'pde = ?', 'visa_priz = ?', 'vis_ser = ?', 'vis_num = ?',
+                    'vis_start = ?', 'vis_end = ?', 'tel_nom = ?', 'd_enter = ?', 'date_okon = ?', 'mcs = ?', 'mcn = ?', 'k = ?',
+                   'dnd = ?', 'dog_obsh = ?', 'rf = ?', 'rfd = ?', 'mot = ?', 'ser = ?', 'nmr = ?', 'vis_krat = ?', 'vis_id = ?',
+                   'gos_nap = ?', 'proz = ?', 'kontrakt = ?', 'kont_start = ?', 'kont_end = ?', 'gos_start = ?', 'gos_end = ?',
+                   'star = ?', 'd_poluch = ?', 'str_poluch = ?', 'city_poluch = ?', 'num_prig = ?', 'kpp = ?', 'med = ?', 'mot = ?',
                    'uch_st_st = ?', 'pr = ?', 'fr = ?', 'o_p = ?', 'prikaz = ?', 'prik_start = ?', 'o_s = ?', 'd_naym = ?', 'email = ?',
                    'prim = ?' ]
-        
+
         for i, var in enumerate(update_par):
             if model.data_update[i] != '':
                 updates.append(var)
@@ -281,8 +281,8 @@ class MSSQL(Database):
 
         # Выполняем запрос
         self._cursor.execute(query, parameters)
-        self._connection.commit()  # Фиксируем изменения 
-    
+        self._connection.commit()  # Фиксируем изменения
+
     def check_rus_eng(self, text) -> bool:
         return bool(re.search(r'[а-яА-ЯёЁ]', text))
 
@@ -335,5 +335,5 @@ if __name__ == "__main__":
     #     i += 1
     # all_rows = db.get_person_for_check("ХРАЙЗАТ", None, None, datetime(1900, 1, 1))
     # debug(all_rows)
-    
+
     # db.update_person(surname="AHMED")
