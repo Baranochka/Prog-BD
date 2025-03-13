@@ -403,7 +403,7 @@ class WindowInformation(ctk.CTkToplevel):
         self.do_lable("Пол:", 10, 100, white, white, black)
         self.do_lable(self.model.data[__row_click__][8], 45, 100, white, white, black) 
         self.do_lable("Дата рождения:", 110, 100, white, white, black)
-        self.do_lable(self.model.data[__row_click__][7].strftime("%d.%m.%Y"), 215, 100, white, white, black) 
+        self.do_lable(self.model.data[__row_click__][7], 215, 100, white, white, black) 
         self.do_lable("Телефон:", 290, 100, white, white, black)
         self.do_lable(f"+7{self.model.data[__row_click__][20]}", 350, 100, white, white, black) 
 
@@ -426,7 +426,7 @@ class WindowInformation(ctk.CTkToplevel):
         self.do_lable("Номер", 110, 265, blue, blue, white)
         self.do_lable(self.model.data[__row_click__][12], 113, 285, blue, white, blue) 
         self.do_lable("Дата выдачи", 210, 265, blue, blue, white)
-        self.do_lable(self.model.data[__row_click__][13].strftime("%d.%m.%Y"), 213, 285, blue, white, blue) 
+        self.do_lable(self.model.data[__row_click__][13], 213, 285, blue, white, blue) 
         self.do_lable("Срок действия", 300, 265, blue, blue, white)
         self.do_lable(self.model.data[__row_click__][14], 303, 285, blue, white, blue) 
 
@@ -442,7 +442,7 @@ class WindowInformation(ctk.CTkToplevel):
             self.do_lable("Дата выдачи", 630, 265, blue, blue, white)
             self.do_lable(self.model.data[__row_click__][18], 633, 285, blue, white, blue) 
             self.do_lable("Срок действия", 730, 265, blue, blue, white)
-            self.do_lable(self.model.data[__row_click__][19].strftime("%d.%m.%Y"), 733, 285, blue, white, blue) 
+            self.do_lable(self.model.data[__row_click__][19], 733, 285, blue, white, blue) 
         elif self.model.data[__row_click__][28] == "ВНЖ":
             ctk.CTkFrame(self.frame_view_inf, width=400, height=90,
                           fg_color=blue).place(x=425, y=230)
@@ -468,13 +468,13 @@ class WindowInformation(ctk.CTkToplevel):
             self.do_lable("Дата выдачи", 630, 265, blue, blue, white)
             self.do_lable(self.model.data[__row_click__][29], 633, 285, blue, white, blue) 
             self.do_lable("Срок действия", 730, 265, blue, blue, white)
-            self.do_lable(self.model.data[__row_click__][30].strftime("%d.%m.%Y"), 733, 285, blue, white, blue) 
+            self.do_lable(self.model.data[__row_click__][30], 733, 285, blue, white, blue) 
 
         self.do_lable("Дата въезда", 10, 325, white, white, black)
         self.do_lable(self.model.data[__row_click__][21], 13, 345, white, white, black) 
         self.do_lable("Срок пребывания до", 110,
                             325, white, white, black)
-        self.do_lable(self.model.data[__row_click__][22].strftime("%d.%m.%Y"), 139, 345, white, white, black) 
+        self.do_lable(self.model.data[__row_click__][22], 139, 345, white, white, black) 
 
         ctk.CTkFrame(self.frame_view_inf, width=400, height=90,
                       fg_color=blue).place(x=5, y=375)
@@ -553,7 +553,7 @@ class WindowInformation(ctk.CTkToplevel):
         ctk.CTkLabel(master=frame_2, text="Дата рождения", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=95,y=5)
         self.dob = ctk.CTkEntry(master=frame_2, width=80, height=20)
         if self.model.data[__row_click__][7] != '':
-            self.dob.insert(0, self.model.data[__row_click__][7].strftime("%d.%m.%Y"))
+            self.dob.insert(0, self.model.data[__row_click__][7])
         self.dob.place(x=100, y=25)
         
         ctk.CTkLabel(master=frame_2, text="Страна рождения", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=237,y=5)
@@ -594,13 +594,13 @@ class WindowInformation(ctk.CTkToplevel):
         ctk.CTkLabel(master=frame_3, text="Дата выдачи", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=176, y=25)
         self.pds = ctk.CTkEntry(master=frame_3, width=80, height=20)
         if self.model.data[__row_click__][13] != '':
-            self.pds.insert(0, self.model.data[__row_click__][13].strftime("%d.%m.%Y"))
+            self.pds.insert(0, self.model.data[__row_click__][13])
         self.pds.place(x=176, y=45)
         
         ctk.CTkLabel(master=frame_3, text="Дата окончания", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=270,y=25)
         self.pde = ctk.CTkEntry(master=frame_3,  width=80, height=20)
         if self.model.data[__row_click__][14] != '':
-            self.pde.insert(0, self.model.data[__row_click__][14].strftime("%d.%m.%Y"))
+            self.pde.insert(0, self.model.data[__row_click__][14])
         self.pde.place(x=270, y=45)
         
         frame_4 = ctk.CTkFrame(master=self.scroll_frame_editing, height=130, fg_color=white)
@@ -616,7 +616,7 @@ class WindowInformation(ctk.CTkToplevel):
         ctk.CTkLabel(master=frame_4, text="Дата выдачи", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=130,y=25)
         self.d_poluch = ctk.CTkEntry(master=frame_4, width=80, height=20)
         if self.model.data[__row_click__][18] != '':
-            self.d_poluch.insert(0, self.model.data[__row_click__][18].strftime("%d.%m.%Y"))
+            self.d_poluch.insert(0, self.model.data[__row_click__][18])
         self.d_poluch.place(x=130, y=45)
         
         ctk.CTkLabel(master=frame_4, text="Страна выдачи", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=230,y=25)
@@ -652,12 +652,12 @@ class WindowInformation(ctk.CTkToplevel):
         ctk.CTkLabel(master=frame_4, text="Срок действия: c", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=200,y=95)
         self.vis_start = ctk.CTkEntry(master=frame_4, width=80, height=20)
         if self.model.data[__row_click__][18] != '':
-            self.vis_start.insert(0, self.model.data[__row_click__][18].strftime("%d.%m.%Y"))
+            self.vis_start.insert(0, self.model.data[__row_click__][18])
         self.vis_start.place(x=308, y=95)
         ctk.CTkLabel(master=frame_4, text="по", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=396,y=95)
         self.vis_end = ctk.CTkEntry(master=frame_4, width=80, height=20)
         if self.model.data[__row_click__][19] != '':
-            self.vis_end.insert(0, self.model.data[__row_click__][19].strftime("%d.%m.%Y"))
+            self.vis_end.insert(0, self.model.data[__row_click__][19])
         self.vis_end.place(x=420, y=95)
         
         frame_5 = ctk.CTkFrame(master=self.scroll_frame_editing, height=80, fg_color=white)
@@ -683,7 +683,7 @@ class WindowInformation(ctk.CTkToplevel):
         ctk.CTkLabel(master=frame_5, text="Дата въезда в РФ", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=335,y=25)
         self.d_enter = ctk.CTkEntry(master=frame_5,  width=80, height=20)
         if self.model.data[__row_click__][21] != '':
-            self.d_enter.insert(0, self.model.data[__row_click__][21].strftime("%d.%m.%Y"))
+            self.d_enter.insert(0, self.model.data[__row_click__][21])
         self.d_enter.place(x=335, y=45)
 
         frame_6 = ctk.CTkFrame(master=self.scroll_frame_editing, height=105, fg_color=white)
@@ -754,13 +754,13 @@ class WindowInformation(ctk.CTkToplevel):
         ctk.CTkLabel(master=frame_7, text="Срок обучения: c", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=75)
         self.kont_start = ctk.CTkEntry(master=frame_7,  width=80, height=20)
         if self.model.data[__row_click__][38] != '':
-            self.kont_start.insert(0, self.model.data[__row_click__][38].strftime("%d.%m.%Y"))
+            self.kont_start.insert(0, self.model.data[__row_click__][38])
         self.kont_start.place(x=120, y=75)
         
         ctk.CTkLabel(master=frame_7, text="по", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=205,y=75)
         self.kont_end = ctk.CTkEntry(master=frame_7,  width=80, height=20)
         if self.model.data[__row_click__][39] != '':
-            self.kont_end.insert(0, self.model.data[__row_click__][39].strftime("%d.%m.%Y"))
+            self.kont_end.insert(0, self.model.data[__row_click__][39])
         self.kont_end.place(x=225, y=75)
 
         ctk.CTkLabel(master=frame_7, text="Приказ №", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=105)
@@ -770,7 +770,7 @@ class WindowInformation(ctk.CTkToplevel):
         ctk.CTkLabel(master=frame_7, text="от", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=165,y=105)
         self.prik_start = ctk.CTkEntry(master=frame_7,  width=80, height=20)
         if self.model.data[__row_click__][55] != '':
-            self.prik_start.insert(0, self.model.data[__row_click__][55].strftime("%d.%m.%Y"))
+            self.prik_start.insert(0, self.model.data[__row_click__][55])
         self.prik_start.place(x=185, y=105)
         
         ctk.CTkLabel(master=frame_7, text="статус", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=275,y=105)
@@ -794,7 +794,7 @@ class WindowInformation(ctk.CTkToplevel):
         ctk.CTkLabel(master=frame_8, text="по", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=320,y=35)
         self.d_naym = ctk.CTkEntry(master=frame_8,  width=80, height=20)
         if self.model.data[__row_click__][57] != '':
-            self.d_naym.insert(0, self.model.data[__row_click__][57].strftime("%d.%m.%Y"))
+            self.d_naym.insert(0, self.model.data[__row_click__][57])
         self.d_naym.place(x=340, y=35)
         
         ctk.CTkLabel(master=frame_8, text="Адрес:", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=10,y=65)

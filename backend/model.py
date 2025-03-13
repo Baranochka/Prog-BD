@@ -13,7 +13,7 @@ from pathlib import Path
 from docx import Document
 from docx.shared import Pt
 from datetime import datetime
-from backend.database import MSSQL
+from backend import database
 from configparser import ConfigParser
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -81,16 +81,16 @@ class Model():
         return path_file
 
     def connect_db(self) -> None:
-        self.db = MSSQL(self.DRIVER, self.SERVER_NAME, self.DATABASE_NAME, self.USERNAME, self.PASSWORD)
+        database.start_session(self.USERNAME, self.PASSWORD)
 
     def is_connect(self) -> bool:
-        if self.db.is_connected:
+        if database.check_connection():
             return True
         else:
             return False
 
     def find_in_db(self, surname, name, och, birthdate) -> None:
-        self.data = self.db.get_person(surname, name, och, birthdate)
+        self.data = database.fetch_person_by(surname=surname, name=name, patronymic=och, birthdate=birthdate)
 
     def is_data(self) -> bool:
         if not self.self.data:
