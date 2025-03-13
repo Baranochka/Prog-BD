@@ -76,10 +76,10 @@ class Model():
             return False
 
     def find_in_db_for_check(self, surname, name, och, birthdate) -> None:
-        self.data = self.db.get_person_for_check(surname, name, och, birthdate)
+        self.data = database.get_person_for_check(surname, name, och, birthdate)
 
     def find_in_db_all_rows_for_check(self) -> None:
-        self.data = self.db.get_all_rows_for_check()
+        self.data = database.get_all_rows_for_check()
 
     def completion_excel(self, file_out: str, row: int) -> None:
 
