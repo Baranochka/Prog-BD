@@ -24,7 +24,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 class Model():
-    
+
     def __init__(self, version):
         self.db = None
         self.data = None
@@ -48,29 +48,6 @@ class Model():
         self.path_ico = self.get_resource_path("icon.ico")
         self.path_excel = self.get_resource_path("sample.xlsx")
         self.path_doc = self.get_resource_path("sample.docx")
-
-        config = ConfigParser()
-        config.read(self.get_resource_path("config.ini"))
-
-        # self.DRIVER = config["SQL Server"]["DRIVER"]
-        # self.SERVER_NAME = config["SQL Server"]["SERVER_NAME"]
-        # self.DATABASE_NAME = config["SQL Server"]["DATABASE_NAME"]
-        # self.USERNAME = None
-        # self.PASSWORD = None
-
-
-        # self.DRIVER = config["Test"]["DRIVER"]
-        # self.SERVER_NAME = config["Test"]["SERVER_NAME"]
-        # self.DATABASE_NAME = config["Test"]["DATABASE_NAME"]
-        # self.USERNAME      = None
-        # self.PASSWORD      = None
-
-
-        self.DRIVER = config["Test_Maks"]["DRIVER"]
-        self.SERVER_NAME = config["Test_Maks"]["SERVER_NAME"]
-        self.DATABASE_NAME = config["Test_Maks"]["DATABASE_NAME"]
-        self.USERNAME = None
-        self.PASSWORD = None
 
     def get_resource_path(self, filename: str) -> str:
         path_progs = Path(__file__).parent
@@ -100,13 +77,13 @@ class Model():
 
     def find_in_db_for_check(self, surname, name, och, birthdate) -> None:
         self.data = self.db.get_person_for_check(surname, name, och, birthdate)
-    
+
     def find_in_db_all_rows_for_check(self) -> None:
         self.data = self.db.get_all_rows_for_check()
 
     def completion_excel(self, file_out: str, row: int) -> None:
-        
-        
+
+
         # Загрузка книги
         wb = openpyxl.load_workbook(self.path_excel)
         # Работаем с активным листом (если нужен другой, уточните)
@@ -271,7 +248,7 @@ class Model():
                 change_sheet(sheet, 58, 42, 0, date[7],  42)
                 change_sheet(sheet, 58, 46, 0, date[8],  46)
                 change_sheet(sheet, 58, 50, 0, date[9],  50)
-            
+
             if self.data[row][30] != '':
                 # Дата срока РВПО
                 date = self.data[row][30].strftime("%d.%m.%Y")
@@ -376,7 +353,7 @@ class Model():
             num = self.data[row][25]
             sheet.cell(row=104, column=46, value=f"КОРПУС {num[0]}")
             sheet.cell(row=200, column=46, value=f"КОРПУС {num[0]}")
-        
+
         if self.data[row][26] != '':
             # Дата начала найма
             date = self.data[row][26]
@@ -435,7 +412,7 @@ class Model():
         os.startfile(output_path)
 
     def complection_word(self, file_out: str, row: int, check: int) -> None:
-        
+
         doc = Document(self.path_doc)
         if check == 1:
             UpdateWord(doc, 1, 12, 1, "X")
@@ -571,26 +548,26 @@ class Model():
                 print("Ошибка:", e)
                 if "10054" in str(e) or self.check_open_browser() == False:
                     return
-                
-    
+
+
         while True:
             try:
                 input_pass_ser = self.driver_browser.find_element(By.NAME, "c_series")
                 if input_pass_ser:
                     input_pass_ser.clear()  # Очистить поле
-                    input_pass_ser.send_keys(self.data[row][5]) 
-                    input_pass_num = self.driver_browser.find_element(By.NAME, "c_number") 
+                    input_pass_ser.send_keys(self.data[row][5])
+                    input_pass_num = self.driver_browser.find_element(By.NAME, "c_number")
                     input_pass_num.clear()  # Очистить поле
-                    input_pass_num.send_keys(self.data[row][6]) 
-                    input_pass_date = self.driver_browser.find_element(By.NAME, "c_issue_date")  
+                    input_pass_num.send_keys(self.data[row][6])
+                    input_pass_date = self.driver_browser.find_element(By.NAME, "c_issue_date")
                     input_pass_date.clear()  # Очистить поле
-                    input_pass_date.send_keys(self.data[row][7]) 
+                    input_pass_date.send_keys(self.data[row][7])
                     break
             except Exception as e:
                 print("Ошибка:", e)
                 if "10054" in str(e) or self.check_open_browser() == False:
                     return
-        
+
         while True:
             try:
                 is_class = self.driver_browser.find_element(By.CLASS_NAME, "info__img")
@@ -619,7 +596,7 @@ class Model():
         # Оставляем браузер открытым на 10 секунд
         time.sleep(10)
         self.driver_browser.quit()
-      
+
     def check_open_browser(self):
         try:
             if self.driver_browser is None:
@@ -631,7 +608,7 @@ class Model():
             return True
         except:
             return False
- 
+
     def save_as_pdf(self, row):
         if os.path.isdir(".\\out_check"):
             pass
@@ -647,11 +624,11 @@ class Model():
     def process_update_database(self, window, row):
         self.copy_change_to_data_update(window, row)
         self.db.update_person(model = self, surname = self.data[row][1], name = self.data[row][3] )
-        
+
     def copy_change_to_data_update(self, window, row):
         self.data_update.clear()
         print(self.data_update)
-        self.append_change(window.fru.get(), row, 0) 
+        self.append_change(window.fru.get(), row, 0)
         self.append_change(window.last_lat.get(), row, 1)
         self.append_change(window.name_rus.get(), row, 2)
         self.append_change(window.nla.get(), row, 3)
@@ -711,13 +688,13 @@ class Model():
         self.append_change(window.d_naym.get(), row, 57)
         self.append_change(window.email.get(), row, 58)
         self.append_change(window.prim.get(), row, 59)
-        
+
         self.check_update_database(row)
 
     def append_change(self, value, row, col):
         if value == '':
             self.data_update.append(self.data[row][col])
-        else: 
+        else:
             if isinstance(value, datetime):
                 value = datetime.strptime(self.data_update[row][col], "%d.%m.%Y")
             self.data_update.append(value)
@@ -730,13 +707,13 @@ class Model():
             if var == self.data[row][i]:
                 self.data_update[i] = ''
         print(self.data_update)
-   
+
 def change_sheet(
-                sheet, 
-                row: int, 
-                col: int, 
-                step: int, 
-                value: str, 
+                sheet,
+                row: int,
+                col: int,
+                step: int,
+                value: str,
                 max_col: int
 ) -> None:
     col_cur = col
@@ -747,12 +724,12 @@ def change_sheet(
             col_cur += step
 
 def UpdateWord(
-                    doc, 
-                    table_index: int, 
-                    row_index: int, 
-                    cell_index: int, 
-                    new_text: str, 
-                    font_size = 12 , 
+                    doc,
+                    table_index: int,
+                    row_index: int,
+                    cell_index: int,
+                    new_text: str,
+                    font_size = 12 ,
                     uppercase = True
         ) -> None:
             """ Обновляет текст в ячейке таблицы, добавляя жирность и изменение регистра """
