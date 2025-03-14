@@ -623,15 +623,12 @@ class Model():
 
     def process_update_database(self, window, row):
         self.copy_change_to_data_update(window, row)
-        # for i, var in enumerate(self.data[0]):
-        #     print(i, var)
-            
         database.update_person(self.data[row][60], self)
-        # self.db.update_person(model = self, surname = self.data[row][1], name = self.data[row][3] )
 
     def copy_change_to_data_update(self, window, row):
         self.data_update.clear()
-        print(self.data_update)
+        # print(self.data)
+        # print(self.data_update)
         self.append_change(window.fru.get(), row, 0)
         self.append_change(window.last_lat.get(), row, 1)
         self.append_change(window.name_rus.get(), row, 2)
@@ -705,9 +702,6 @@ class Model():
 
     def check_update_database(self, row):
         for i, var in enumerate(self.data_update):
-            # if isinstance(var, datetime) and var != '':
-            #     print()
-            #     var = datetime.strptime(self.data_update[i], "%d.%m.%Y")
             if var == self.data[row][i]:
                 self.data_update[i] = ''
         print(self.data_update)

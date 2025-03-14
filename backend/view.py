@@ -713,7 +713,7 @@ class WindowInformation(ctk.CTkToplevel):
         
         ctk.CTkLabel(master=frame_6, text="Дата окончания", fg_color=white, text_color=blue, height=20, anchor = "center").place(x=270,y=50)
         self.mot = ctk.CTkEntry(master=frame_6,  width=80, height=20)
-        self.mot.insert(0, self.model.data[__row_click__][49])
+        self.mot.insert(0, self.model.data[__row_click__][30])
         self.mot.place(x=270, y=70)
 
         frame_7 = ctk.CTkFrame(master=self.scroll_frame_editing, height=140, fg_color=white)
