@@ -2,7 +2,6 @@
 Описание класса Model. Model описывает основной функционал программы.
 
 """
-from math import e
 import os
 import re
 import sys
@@ -15,10 +14,8 @@ from docx import Document
 from docx.shared import Pt
 from datetime import datetime
 from backend import database
-from configparser import ConfigParser
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -769,14 +766,16 @@ class Model():
                       "varchar"
                       ]
         for i, var in enumerate(self.data_update):
-            if array_type[i] == "bigint":
-                self.data_update[i] = int(var)
-            elif array_type[i] == "float":
-                self.data_update[i] = float(var)
-            elif array_type[i] == "datetime":
-                self.data_update[i] = datetime.strptime(var, "%d.%m.%Y")
-            elif array_type[i] == "varchar":
-                self.data_update[i] = str(var)
+            if var != '':
+                if array_type[i] == "bigint":
+                    self.data_update[i] = int(var)
+                elif array_type[i] == "float":
+                    self.data_update[i] = float(var)
+                elif array_type[i] == "datetime":
+                    print(var)
+                    self.data_update[i] = datetime.strptime(var, "%d.%m.%Y")
+                elif array_type[i] == "varchar":
+                    self.data_update[i] = str(var)
 
 def change_sheet(
                 sheet,
