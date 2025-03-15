@@ -1,123 +1,33 @@
-import os
-import sys
-import pyodbc
 from datetime import datetime
 import re as regexp
-from pathlib import Path
-from socket import gethostname
-
-from sqlalchemy import create_engine, text
-from sqlalchemy.engine import URL, Row
-from sqlalchemy.orm import Session
-
-from typing import Optional, Sequence, Tuple, Any, Union, List, Dict
-
-from configparser import ConfigParser
 
 from dataclasses import dataclass
 
-engine = None
+from sqlalchemy import create_engine, text, Table, MetaData
+from sqlalchemy.engine import Row
+from sqlalchemy.orm import Session
 
-HOSTNAME = gethostname()
+from typing import Optional, Sequence, Any, Union, List, Dict
+
+import pyodbc
+
+from . import config
 
 
 def debug(*args, **kwargs) -> None:
     print(*args, **kwargs)
 
 
-def get_connection_string(
-    driver: str,
-    database_name: str,
-    username: str,
-    password: str,
-) -> str:
-    """Функция для получения строки соединения к БД."""
-    return (
-        f"DRIVER={driver};"
-        f"SERVER={HOSTNAME}\\SQLEXPRESS;"
-        f"PORT=1433;"
-        f"DATABASE={database_name};"
-        f"UID={username};"
-        f"PWD={password};"
-        "Encrypt=no"
-    )
-
-
-def create_database_config(section: str, config: ConfigParser,  user, passw):
-    """Функция для создания конфигурации БД."""
-    driver = config.get(section, "DRIVER")
-    database_name = config.get(section, "DATABASE_NAME")
-    username = user
-    password = passw
-
-    connection_string = get_connection_string(
-        driver,
-        database_name,
-        username,
-        password,
-    )
-    connection_url = URL.create(
-        "mssql+pyodbc",
-        query={
-            "odbc_connect": connection_string,
-            "TrustServerCertificate": "yes",
-        },
-    )
-    return connection_url
-
-
-@dataclass(frozen=False)
-class BaseDatabaseConfig:
-    """Базовый класс конфигурации БД."""
-
-    section: str
-    connection_url: URL
-    username: str
-    password: str
-
-    @classmethod
-    def create(cls, section: str, config: ConfigParser, username, password):
-        """Создает экземпляр класса с нужной конфигурацией."""
-        connection_url = create_database_config(section, config, username, password)
-        return cls(section=section, connection_url=connection_url, username=username, password=password)
-
-
-@dataclass(frozen=False)
-class DevelopmentDatabaseConfig(BaseDatabaseConfig):
-    def __init__(self, username, password):
-        """Класс-конфигурация БД для разработки."""
-        # CONFIG_PATH = Path(__file__).resolve().parent/ "config" / "config.ini"
-        
-        path_progs = Path(__file__).parent
-        """Возвращает корректный путь к файлу, работает и в `.exe`, и в обычном запуске Python"""
-        if getattr(sys, '_MEIPASS', False):  # Проверяем, запущен ли скрипт в режиме PyInstaller
-            CONFIG_PATH = os.path.join(sys._MEIPASS, "config.ini")
-        else: 
-            CONFIG_PATH = os.path.join(path_progs, f"config\\config.ini")
-        
-        config = ConfigParser()
-        config.read(CONFIG_PATH)
-
-        section = "Test_Maks"
-        self.connection_url: URL = BaseDatabaseConfig.create(section, config, username, password).connection_url
-
-
-# @dataclass(frozen=True)
-# class ProductionDatabaseConfig(BaseDatabaseConfig):
-#     """Класс-конфигурация БД для продуктивной среды."""
-
-#     CONFIG_PATH = Path(__file__).resolve().parent / "config" / "config.ini"
-#     config = ConfigParser()
-#     config.read(CONFIG_PATH)
-
-#     section = "SQL Server"
-#     connection_url: URL = BaseDatabaseConfig.create(section, config).connection_url
-
-def start_session(username, password):
+def start_session(username, password) -> None:
     """Функция для создания сессии с БД."""
-    data_config = DevelopmentDatabaseConfig(username, password)
+    data_config = config.DevelopmentDatabaseConfig(username, password)
     global engine
     engine = create_engine(data_config.connection_url)
+
+
+metadata = MetaData()
+persons = Table("persons", metadata, autoload_with=config.engine)
+
 
 def check_connection():
     """Проверка соединения с БД."""
@@ -218,19 +128,43 @@ class PersonsField:
     note = "prim"  # Поле 'Примечание'.
 
 
-def execute_query(query: str) -> ...:
+def execute_query(query: str) -> Optional[Sequence[Row[Any]]]:
     """Базовая функция, осуществляющая подключение к БД и исполняющая запрос."""
     try:
         with Session(engine) as session:
-            debug(f"Выполнение запроса '{query}'...")
+            debug(f"Выполнение запроса `{query}`...")
 
             result = session.execute(text(query))
 
-            debug(f"Успешное выполнение запроса '{query}'...")
-            return result.all()
+            if result is not None:
+                debug(f"Успешное выполнение запроса `{query}`...")
+                return result.all()
+
+            return None
     except Exception as e:
-        debug(f"Ошибка '{e}...'")
+        debug(f"Ошибка `{e}`...")
         return None
+
+
+def update(
+    query: str,
+    params: Dict[str, Any]
+) -> None:
+    """Обновление записи в таблице 'persons' по ID."""
+    try:
+        with Session(engine) as session:
+            debug(f"Выполнение запроса `{query}`...")
+
+            session.execute(text(query), params)
+            session.commit()
+
+            debug(f"Успешное выполнение запроса `{query}`...")
+
+            return
+
+    except Exception as e:
+        debug(f"Ошибка `{e}`...")
+        return
 
 
 def fetch_all_data() :
@@ -308,7 +242,7 @@ def fetch_person_by(
                     conditions.append(f"{PersonsField.birthdate} = '{value}'")
                     debug_messages.append(f"Fetching person by birthdate: '{value}'")
     if conditions:
-        query = f"SELECT {BASE_QUERY} FROM persons WHERE " + f" AND ".join(
+        query = f"SELECT {BASE_QUERY} FROM persons WHERE " + " AND ".join(
             conditions
         )
         for message in debug_messages:
@@ -331,94 +265,96 @@ def fetch_person_by(
     return None
 
 
-
 def update_person(
     id: int,
     model,
 ) -> None:
     """Обновление записи в таблице 'persons' по ID."""
-    query = "UPDATE persons SET "
-
-    parameters = []
-    updates = []
     update_par = [
-        f"{PersonsField.surname} = ?",
-        f"{PersonsField.surname_in_latin} = ?",
-        f"{PersonsField.name} = ?",
-        f"{PersonsField.name_in_latin} = ?",
-        f"{PersonsField.patronymic} = ?",
-        f"{PersonsField.patronymic_in_latin} = ?",
-        f"{PersonsField.citizenship} = ?",
-        f"{PersonsField.birthdate} = ?",
-        f"{PersonsField.sex} = ?",
-        f"{PersonsField.state_of_birth} = ?",
-        f"{PersonsField.birth_city} = ?",
-        f"{PersonsField.passport_series} = ?",
-        f"{PersonsField.passport_number} = ?",
-        f"{PersonsField.passport_issue_date} = ?",
-        f"{PersonsField.passport_expiration_date} = ?",
-        f"{PersonsField.visa_requirement} = ?",
-        f"{PersonsField.visa_series} = ?",
-        f"{PersonsField.visa_number} = ?",
-        f"{PersonsField.visa_issue_date} = ?",
-        f"{PersonsField.visa_expiration_date} = ?",
-        f"{PersonsField.telephone_number} = ?",
-        f"{PersonsField.entry_date} = ?",
-        f"{PersonsField.departure_date} = ?",
-        f"{PersonsField.migration_card_series} = ?",
-        f"{PersonsField.migration_card_number} = ?",
-        f"{PersonsField.room_number} = ?",
-        f"{PersonsField.start_date_of_hostel_contract} = ?",
-        f"{PersonsField.hostel_agreement} = ?",
-        f"{PersonsField.availability_of_residence_permit_and_RVPO} = ?",
-        f"{PersonsField.date_of_issuance_of_residence_permit_and_RVPO} = ?",
-        f"{PersonsField.term_of_validity_of_residence_permit_and_RVPO} = ?",
-        f"{PersonsField.residence_permit_and_RVPO_series} = ?",
-        f"{PersonsField.residence_permit_and_RVPO_number} = ?",
-        f"{PersonsField.visa_multiplicity} = ?",
-        f"{PersonsField.visa_id} = ?",
-        f"{PersonsField.study_direction} = ?",
-        f"{PersonsField.address_of_permanent_residence_in_the_country} = ?",
-        f"{PersonsField.contract_number} = ?",
-        f"{PersonsField.term_of_study_from} = ?",
-        f"{PersonsField.term_of_study_on} = ?",
-        f"{PersonsField.date_of_commencement_of_the_contract_directions} = ?",
-        f"{PersonsField.termination_date_of_the_state_direction_contract} = ?",
-        f"{PersonsField.previous_address} = ?",
-        f"{PersonsField.date_of_visa_issuance} = ?",
-        f"{PersonsField.visa_issuance_country} = ?",
-        f"{PersonsField.visa_issuance_city} = ?",
-        f"{PersonsField.invitation_number} = ?",
-        f"{PersonsField.checkpoint} = ?",
-        f"{PersonsField.date_of_medical_examination} = ?",
-        f"{PersonsField.date_of_fingerprinting} = ?",
-        f"{PersonsField.study_status} = ?",
-        f"{PersonsField.study_program} = ?",
-        f"{PersonsField.study_form} = ?",
-        f"{PersonsField.specialization} = ?",
-        f"{PersonsField.order_number} = ?",
-        f"{PersonsField.start_of_the_order} = ?",
-        f"{PersonsField.status} = ?",
-        f"{PersonsField.termination_date_of_the_employment_contract} = ?",
-        f"{PersonsField.email} = ?",
-        f"{PersonsField.note} = ?",
-        f"{PersonsField.id} = ?"
+        f"{PersonsField.surname}",
+        f"{PersonsField.surname_in_latin}",
+        f"{PersonsField.name}",
+        f"{PersonsField.name_in_latin}",
+        f"{PersonsField.patronymic}",
+        f"{PersonsField.patronymic_in_latin}",
+        f"{PersonsField.citizenship}",
+        f"{PersonsField.birthdate}",
+        f"{PersonsField.sex}",
+        f"{PersonsField.state_of_birth}",
+        f"{PersonsField.birth_city}",
+        f"{PersonsField.passport_series}",
+        f"{PersonsField.passport_number}",
+        f"{PersonsField.passport_issue_date}",
+        f"{PersonsField.passport_expiration_date}",
+        f"{PersonsField.visa_requirement}",
+        f"{PersonsField.visa_series}",
+        f"{PersonsField.visa_number}",
+        f"{PersonsField.visa_issue_date}",
+        f"{PersonsField.visa_expiration_date}",
+        f"{PersonsField.telephone_number}",
+        f"{PersonsField.entry_date}",
+        f"{PersonsField.departure_date}",
+        f"{PersonsField.migration_card_series}",
+        f"{PersonsField.migration_card_number}",
+        f"{PersonsField.room_number}",
+        f"{PersonsField.start_date_of_hostel_contract}",
+        f"{PersonsField.hostel_agreement}",
+        f"{PersonsField.availability_of_residence_permit_and_RVPO}",
+        f"{PersonsField.date_of_issuance_of_residence_permit_and_RVPO}",
+        f"{PersonsField.term_of_validity_of_residence_permit_and_RVPO}",
+        f"{PersonsField.residence_permit_and_RVPO_series}",
+        f"{PersonsField.residence_permit_and_RVPO_number}",
+        f"{PersonsField.visa_multiplicity}",
+        f"{PersonsField.visa_id}",
+        f"{PersonsField.study_direction}",
+        f"{PersonsField.address_of_permanent_residence_in_the_country}",
+        f"{PersonsField.contract_number}",
+        f"{PersonsField.term_of_study_from}",
+        f"{PersonsField.term_of_study_on}",
+        f"{PersonsField.date_of_commencement_of_the_contract_directions}",
+        f"{PersonsField.termination_date_of_the_state_direction_contract}",
+        f"{PersonsField.previous_address}",
+        f"{PersonsField.date_of_visa_issuance}",
+        f"{PersonsField.visa_issuance_country}",
+        f"{PersonsField.visa_issuance_city}",
+        f"{PersonsField.invitation_number}",
+        f"{PersonsField.checkpoint}",
+        f"{PersonsField.date_of_medical_examination}",
+        f"{PersonsField.date_of_fingerprinting}",
+        f"{PersonsField.study_status}",
+        f"{PersonsField.study_program}",
+        f"{PersonsField.study_form}",
+        f"{PersonsField.specialization}",
+        f"{PersonsField.order_number}",
+        f"{PersonsField.start_of_the_order}",
+        f"{PersonsField.status}",
+        f"{PersonsField.termination_date_of_the_employment_contract}",
+        f"{PersonsField.email}",
+        f"{PersonsField.note}",
+        f"{PersonsField.id}",
     ]
+
+    updatable_fields = []  # Обновляемые поля.
+    params = {}  # Значения обнволяемых полей.
 
     for i, field in enumerate(update_par):
         if model.data_update[i] != "":
-            updates.append(field)
-            parameters.append(model.data_update[i])
+            param_name = f"{field}_param"
+            updatable_fields.append(f"{field} = :{param_name}")
+            params[param_name] = model.data_update[i]
 
     # Формируем запрос
-    query += ", ".join(updates) + f" WHERE {PersonsField.id} = {id}"
+    if updatable_fields:  # Проверяем, есть ли поля для обновления
+        query = "UPDATE persons SET " + ", ".join(updatable_fields) + f" WHERE {PersonsField.id} = :{PersonsField.id}"
+        params[f"{PersonsField.id}"] = id  # Добавляем параметр id
+
 
     # Выводим для отладки (если нужно)
     debug(query)
-    debug(parameters)
+    debug(params)
 
     # Выполняем запрос
-    execute_query(query)
+    update(query, params)
 
 
 def check_rus_eng(text: str) -> bool:
@@ -469,7 +405,7 @@ def get_person_for_check(
 
     if conditions:
         try:
-            query = f"SELECT {fields} FROM persons WHERE " + f" AND ".join(
+            query = f"SELECT {fields} FROM persons WHERE " + " AND ".join(
                 conditions
             )
             for message in debug_messages:
@@ -515,5 +451,3 @@ def get_all_rows_for_check() -> ...:
         return None
 
 
-if __name__ == "__main__":
-    print(fetch_all_data())
