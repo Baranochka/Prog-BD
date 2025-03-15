@@ -1,0 +1,1 @@
+pyinstaller --noconsole --onefile --add-data "backend/config/sample.xlsx;." --add-data "backend/config/sample.docx;."  --add-data "backend/config/icon.ico;." --add-data "backend/config/config.ini;." --add-data "backend/config/image.jpg;." --version-file "backend/config/version.txt" --icon="backend/config/icon.ico" "Program BD.py"
