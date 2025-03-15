@@ -93,7 +93,7 @@ class DevelopmentDatabaseConfig(BaseDatabaseConfig):
         if getattr(sys, '_MEIPASS', False):  # Проверяем, запущен ли скрипт в режиме PyInstaller
             CONFIG_PATH = os.path.join(sys._MEIPASS, "config.ini")
         else: 
-            CONFIG_PATH = os.path.join(path_progs, f"config\\config.ini")
+            CONFIG_PATH = os.path.join(path_progs, "config\\config.ini")
         
         config = ConfigParser()
         config.read(CONFIG_PATH)

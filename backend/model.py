@@ -2,6 +2,7 @@
 Описание класса Model. Model описывает основной функционал программы.
 
 """
+from math import e
 import os
 import re
 import sys
@@ -623,6 +624,7 @@ class Model():
 
     def process_update_database(self, window, row):
         self.copy_change_to_data_update(window, row)
+        self.change_type_update_data()
         database.update_person(self.data[row][60], self)
 
     def copy_change_to_data_update(self, window, row):
@@ -696,8 +698,6 @@ class Model():
         if value == '':
             self.data_update.append(self.data[row][col])
         else:
-            if isinstance(value, datetime):
-                value = datetime.strptime(self.data_update[row][col], "%d.%m.%Y")
             self.data_update.append(value)
 
     def check_update_database(self, row):
@@ -705,6 +705,78 @@ class Model():
             if var == self.data[row][i]:
                 self.data_update[i] = ''
         print(self.data_update)
+
+    def change_type_update_data(self):
+        array_type = ["varchar",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "datetime",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "datetime",
+                      "datetime",
+                      "bigint",
+                      "bigint",
+                      "bigint",
+                      "datetime",
+                      "datetime",
+                      "bigint",
+                      "datetime",
+                      "datetime",
+                      "bigint",
+                      "bigint",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "float",
+                      "float",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "datetime",
+                      "datetime",
+                      "datetime",
+                      "datetime",
+                      "varchar",
+                      "datetime",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "datetime",
+                      "datetime",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "varchar",
+                      "float",
+                      "float",
+                      "varchar",
+                      "datetime",
+                      "varchar",
+                      "varchar"
+                      ]
+        for i, var in enumerate(self.data_update):
+            if array_type[i] == "bigint":
+                self.data_update[i] = int(var)
+            elif array_type[i] == "float":
+                self.data_update[i] = float(var)
+            elif array_type[i] == "datetime":
+                self.data_update[i] = datetime.strptime(var, "%d.%m.%Y")
+            elif array_type[i] == "varchar":
+                self.data_update[i] = str(var)
 
 def change_sheet(
                 sheet,
