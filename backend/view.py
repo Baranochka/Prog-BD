@@ -38,14 +38,14 @@ class WindowAuthorizationConnectionBD(ctk.CTkToplevel):
                       bg_color="white", height=15).place(x=130, y=40)
         self.entry_login = ctk.CTkEntry(
             self.frame_auth, width=180, justify="center")
-        self.entry_login.insert(0,"sa")
+        # self.entry_login.insert(0,"")
 
         self.entry_login.place(x=60, y=60)
         ctk.CTkLabel(self.frame_auth, text="Пароль",
                       bg_color="white", height=10).place(x=126, y=90)
         self.entry_password = ctk.CTkEntry(
             self.frame_auth, width=180, justify="center")
-        self.entry_password.insert(0,"121270")
+        # self.entry_password.insert(0,"")
 
         self.entry_password.place(x=60, y=110)
         self.entry_password.configure(show="*")
@@ -72,7 +72,7 @@ class WindowAuthorizationConnectionBD(ctk.CTkToplevel):
         # Перехватываем нажатие на крестик (закрытие окна)
         self.protocol("WM_DELETE_WINDOW", self.close_app)
         
-        self.connect()
+        # ыself.connect()
 
     def close_app(self):
         # Завершает весь Tkinter
@@ -126,7 +126,7 @@ class WindowProgramm(ctk.CTk):
         self.entry_familia = ctk.CTkEntry(master=self, width=250)
         self.entry_familia.place(x=90, y=150)
         self.entry_familia.bind("<Return>", command=self.click_find)
-        self.entry_familia.insert(0,"ahmed")
+        # self.entry_familia.insert(0,"")
         
         # # Создание ярлыка и текстового поля для ввода имени
         ctk.CTkLabel(master=self, text="Имя:",
@@ -191,43 +191,7 @@ class WindowProgramm(ctk.CTk):
                           "Familia",  # 1      last_lat
                           "Имя",  # 2      name_rus
                           "Imya"  # 3      nla
-                          #   "Отчество",                               #4      och
-                          #   "Otchestvo",                              #5      oche
-                          #   "Гражданство",                            #6      pob
-                          #   "Дата рождения",                          #7      dob
-                          #   "Пол",                                    #8      sex
-                          #   "Государство рождения",                   #9      pob
-                          #   "Город рождения",                         #10     cob
-                          #   "Серия паспорта",                         #11     pas_ser
-                          #   "Номер паспорта",                         #12     pas_num
-                          #   "Дата выдачи паспорта",                   #13     pds
-                          #   "Срок действия паспорта",                 #14     pde
-                          #   "Признак наличия визы",                   #15     visa_priz
-                          #   "Виза серия",                             #16     vis_ser
-                          #   "Виза номер",                             #17     vis_num
-                          #   "Дата выдачи визы",                       #18     d_poluch
-                          #   "Срок действия визы",                     #19     vis_end
-                          #   "Телефон",                                #20     tel_nom
-                          #   "Дата въезда",                            #21     d_enter
-                          #   "Срок пребывания до",                     #22     date_okon
-                          #   "Миграционная карта серия",               #23     mcs
-                          #   "Миграционная карта номер",               #24     mcn
-                          #   "Номер корпуса общежития",                #25     obsch
-                          #   "Дата начала договора с общагой",         #26     dnd
-                          #   "Номер договора",                         #27     dog_obsh
-                          #   "Наличие ВНЖ, РВПО",                      #28     rf
-                          #   "Дата выдачи ВНЖ, РВПО",                  #29     rfd
-                          #   "Срок действия ВНЖ, РВПО",                #30     mot
-                          #   "Серия ВНЖ, РВПО",                        #31     ser
-                          #   "Номер ВНЖ, РВПО",                        #32     nmr
-                          #    "Кратность визы",                        #33     vis_krat
-                          #    "Индентификатор визы",                   #34     vis_id
-                          #    "Направление",                           #35     gos_nap
-                          #    "Дата выдачи контракта",                 #36     gos_start
-                          #    "Номер контракта",                       #37     kontrakt
-                          #    "Срок обучения с",                       #38     kont_start
-                          #    "Срок обучения по",                      #39     kont_end
-                          )
+                        )
         style = ttk.Style()
         style.configure("Treeview.Heading", font=("Cascadia Code", 14))  # Устанавливаем шрифт заголовков
         style.configure("Custom.Treeview", font=("Cascadia Code", 14))  # Устанавливаем шрифт заголовков
@@ -241,14 +205,10 @@ class WindowProgramm(ctk.CTk):
             self.tree.column(col, anchor="center", stretch=True, width=300)
 
         # Создание пролистывания по таблице
-        scrollbar_y = ctk.CTkScrollbar(
-            self.frame_table, width=15, height=50)
-        scrollbar_y.place(x=985, y=0)
-        self.tree.configure(yscrollcommand=scrollbar_y.set)
-
-        # scrollbar_x = ctk.CTkScrollbar(self.frame_table, width=15, height=15)
-        # scrollbar_x.place(x=0, y=295)
-        # self.tree.configure(xscrollcommand=scrollbar_x.set)
+        # scrollbar_y = ctk.CTkScrollbar(self.frame_table, width=15, height=50)
+        # scrollbar_y.place(x=985, y=0)
+        
+        # self.tree.configure(yscrollcommand=scrollbar_y.set)
 
         self.tree.place(x=0, y=0, relwidth=1, relheight=1)
 
@@ -314,7 +274,7 @@ class WindowProgramm(ctk.CTk):
 
         self.model.find_in_db(surname, name, och, birthdate)
 
-        if self.model.is_data:
+        if self.model.is_data():
             for i, var in enumerate(self.model.data):
                 self.tree.insert("", ctk.END, iid=f"I00{i}", values=var)
             self.frame_table.place(x=0, y=290) 
@@ -343,26 +303,12 @@ class WindowInformation(ctk.CTkToplevel):
         self.title("Информация о студенте")
         # center_window(self, 900, 700)
         self.state("zoomed")
-
         
         self.configure(fg_color="white")
         self.iconbitmap(self.model.path_ico)
         blue = "#6699CC"
         white = "white"
         black = "black"
-        
-        
-        # tabview = ctk.CTkTabview(
-        #     self, 
-        #     fg_color=white, 
-        #     anchor="nw",
-        # )
-        # tabview.pack(fill="both", expand=True, padx=10, pady=10)
-        # tab1 = tabview.add("Информация")
-        # tab2 = tabview.add("Редактирование")
-        
-        # self.frame_view_inf = ctk.CTkFrame(tab1, width=865, height=520, fg_color=white)
-        # self.frame_view_inf.place(x=0, y=5)
         
         self.frame_editing = ctk.CTkFrame(self, width=865, height=520, fg_color=blue)
         self.frame_editing.pack(fill="both", expand=True)
@@ -877,21 +823,21 @@ class WindowCheckGosuslugi(ctk.CTkToplevel):
                       bg_color="white").place(x=20, y=150)
         self.entry_familia = ctk.CTkEntry(master=self, width=250)
         self.entry_familia.place(x=90, y=150)
-        # self.entry_familia.bind("<Return>", command=self.click_find)
+        self.entry_familia.bind("<Return>", command=self.click_find)
         
         # # Создание ярлыка и текстового поля для ввода имени
         ctk.CTkLabel(master=self, text="Имя:",
                       bg_color="white").place(x=20, y=180)
         self.entry_name = ctk.CTkEntry(master=self, width=250)
         self.entry_name.place(x=90, y=180)
-        # self.entry_name.bind("<Return>", command=self.click_find)
+        self.entry_name.bind("<Return>", command=self.click_find)
 
         # # Создание ярлыка и текстового поля для ввода отчества
         ctk.CTkLabel(master=self, text="Отчество:",
                       bg_color="white").place(x=20, y=210)
         self.entry_otchestvo = ctk.CTkEntry(master=self, width=250)
         self.entry_otchestvo.place(x=90, y=210)
-        # self.entry_otchestvo.bind("<Return>", command=self.click_find)
+        self.entry_otchestvo.bind("<Return>", command=self.click_find)
 
         """---------------------------------------------------ДАТА--------------------------------------------------"""
 
@@ -955,15 +901,11 @@ class WindowCheckGosuslugi(ctk.CTkToplevel):
             self.tree.heading(col, text=col)
             self.tree.column(col, anchor="center", stretch=True, width=300)
 
-        # Создание пролистывания по таблице
-        scrollbar_y = ctk.CTkScrollbar(
-            self.frame_table, width=15, height=50)
-        scrollbar_y.place(x=985, y=0)
-        self.tree.configure(yscrollcommand=scrollbar_y.set)
-
-        # scrollbar_x = ctk.CTkScrollbar(self.frame_table, width=15, height=15)
-        # scrollbar_x.place(x=0, y=295)
-        # self.tree.configure(xscrollcommand=scrollbar_x.set)
+        # # Создание пролистывания по таблице
+        # scrollbar_y = ctk.CTkScrollbar(
+        #     self.frame_table, width=15, height=50)
+        # scrollbar_y.place(x=985, y=0)
+        # self.tree.configure(yscrollcommand=scrollbar_y.set)
 
         self.tree.place(x=0, y=0, relwidth=1, relheight=1)
 
@@ -994,10 +936,7 @@ class WindowCheckGosuslugi(ctk.CTkToplevel):
         """-------------------------------------------------------ОТКЛИК-НА-ТАБЛИЦУ----------------------------------------------------------"""
 
         # Возможность отклика на таблицу
-        self.tree.bind("<Double-1>", self.click_on_table)
-        
-                # Фиксация окна
-                
+        self.tree.bind("<Double-1>", self.click_on_table)      
         self.protocol("WM_DELETE_WINDOW", self.close_app)
                 
         self.grab_set()

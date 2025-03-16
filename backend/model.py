@@ -30,11 +30,7 @@ class Model():
         self.path_jpg = None
         self.path_ico = None
         self.path_excel = None
-        self.path_config = None
         self.path_doc = None
-        self.DRIVER = None
-        self.SERVER_NAME = None
-        self.DATABASE_NAME = None
         self.USERNAME = None
         self.PASSWORD = None
         self.driver_browser = None
@@ -68,7 +64,7 @@ class Model():
         self.data = database.fetch_person_by(surname=surname, name=name, patronymic=och, birthdate=birthdate)
 
     def is_data(self) -> bool:
-        if not self.self.data:
+        if self.data != None:
             return True
         else:
             return False
@@ -108,7 +104,7 @@ class Model():
         change_sheet(sheet, 182, 18, 4, self.data[row][6],  122)
         # Дата рождения
         if self.data[row][7] != '':
-            date = self.data[row][7].strftime("%d.%m.%Y")
+            date = self.data[row][7]
             # Число рождения
             change_sheet(sheet, 27, 30, 0, date[0],  30)
             change_sheet(sheet, 27, 34, 0, date[1],  34)
@@ -147,7 +143,7 @@ class Model():
         change_sheet(sheet, 187, 86, 4, self.data[row][12],  122)
         if self.data[row][13] != '':
             # Дата выдачи паспорта
-            date = self.data[row][13].strftime("%d.%m.%Y")
+            date = self.data[row][13]
             # Число
             change_sheet(sheet, 39, 9, 0, date[0],  9)
             change_sheet(sheet, 39, 13, 0, date[1],  13)
@@ -169,7 +165,7 @@ class Model():
             change_sheet(sheet, 189, 50, 0, date[9],  50)
         if self.data[row][14] != '':
             # Дата срока действия паспорта
-            date = self.data[row][14].strftime("%d.%m.%Y")
+            date = self.data[row][14]
             # Число
             change_sheet(sheet, 39, 66, 0, date[0],  66)
             change_sheet(sheet, 39, 70, 0, date[1],  70)
@@ -200,7 +196,7 @@ class Model():
             change_sheet(sheet, 56, 42, 4, self.data[row][17],  122)
             if self.data[row][18] != '':
                 # Дата выдачи визы
-                date = self.data[row][18].strftime("%d.%m.%Y")
+                date = self.data[row][18]
                 # Число
                 change_sheet(sheet, 58, 9, 0, date[0],  9)
                 change_sheet(sheet, 58, 13, 0, date[1],  13)
@@ -214,7 +210,7 @@ class Model():
                 change_sheet(sheet, 58, 50, 0, date[9],  50)
             if self.data[row][19] != '':
                 # Дата срока визы
-                date = self.data[row][19].strftime("%d.%m.%Y")
+                date = self.data[row][19]
                 # Число
                 change_sheet(sheet, 58, 66, 0, date[0],  66)
                 change_sheet(sheet, 58, 70, 0, date[1],  70)
@@ -249,7 +245,7 @@ class Model():
 
             if self.data[row][30] != '':
                 # Дата срока РВПО
-                date = self.data[row][30].strftime("%d.%m.%Y")
+                date = self.data[row][30]
                 # Число
                 change_sheet(sheet, 58, 66, 0, date[0],  66)
                 change_sheet(sheet, 58, 70, 0, date[1],  70)
@@ -283,7 +279,7 @@ class Model():
                 change_sheet(sheet, 58, 50, 0, date[9],  50)
             if self.data[row][30] != '':
                 # Дата срока ВНЖ
-                date = self.data[row][30].strftime("%d.%m.%Y")
+                date = self.data[row][30]
                 # Число
                 change_sheet(sheet, 58, 66, 0, date[0],  66)
                 change_sheet(sheet, 58, 70, 0, date[1],  70)
@@ -299,7 +295,7 @@ class Model():
         # change_sheet(sheet, 62, 82, 4, self.data[row][20],  118)
         if self.data[row][21] != '':
             # Дата въезда
-            date = self.data[row][21].strftime("%d.%m.%Y")
+            date = self.data[row][21]
             # Число
             change_sheet(sheet, 66, 9, 0, date[0],  9)
             change_sheet(sheet, 66, 13, 0, date[1],  13)
@@ -313,7 +309,7 @@ class Model():
             change_sheet(sheet, 66, 50, 0, date[9],  50)
         if self.data[row][22] != '':
             # Дата срок пребывания
-            date = self.data[row][22].strftime("%d.%m.%Y")
+            date = self.data[row][22]
             # Число
             change_sheet(sheet, 66, 66, 0, date[0],  66)
             change_sheet(sheet, 66, 70, 0, date[1],  70)
@@ -425,7 +421,7 @@ class Model():
         UpdateWord(doc, 1, 23, 7, self.data[row][4])  # Отчество на русском
         UpdateWord(doc, 1, 23, 15, self.data[row][5])  # Отчество на латинице
         if self.data[row][7] != '':
-            UpdateWord(doc, 1, 25, 5, self.data[row][7].strftime("%d.%m.%Y"))  # Дата рождения
+            UpdateWord(doc, 1, 25, 5, self.data[row][7])  # Дата рождения
         # Стаана и город рождения
         UpdateWord(doc, 1, 25, 13,
                 f"{self.data[row][9]}, {self.data[row][10]}", 11)
@@ -437,18 +433,18 @@ class Model():
         UpdateWord(doc, 1, 29, 2, self.data[row][11])  # Серия паспорта
         UpdateWord(doc, 1, 29, 6, self.data[row][12])  # Номер паспорта
         if self.data[row][13] != '':
-            UpdateWord(doc, 1, 29, 15, self.data[row][13].strftime("%d.%m.%Y"), 11)  # Дата выдачи паспорта
+            UpdateWord(doc, 1, 29, 15, self.data[row][13], 11)  # Дата выдачи паспорта
         if self.data[row][14] != '':
             # Дата срока действия паспорта
-            UpdateWord(doc, 1, 29, 19, self.data[row][14].strftime("%d.%m.%Y"), 11)
+            UpdateWord(doc, 1, 29, 19, self.data[row][14], 11)
         if self.data[row][25]:
             num = self.data[row][25]
             UpdateWord(
                 doc, 2, 2, 0, f"Г. МОСКВА, КОЧНОВСКИЙ ПР., Д.7, КОРПУС {num[0]}")
         if self.data[row][21] != '':
-            UpdateWord(doc, 2, 3, 14, self.data[row][21].strftime("%d.%m.%Y"))  # Дата въезда
+            UpdateWord(doc, 2, 3, 14, self.data[row][21])  # Дата въезда
         if self.data[row][22] != '':
-            UpdateWord(doc, 2, 3, 23, self.data[row][22].strftime("%d.%m.%Y"))  # Срок пребывания
+            UpdateWord(doc, 2, 3, 23, self.data[row][22])  # Срок пребывания
         if self.data[row][28] == "нет":
             UpdateWord(doc, 2, 6, 4, self.data[row][33], 12, False)  # Кратност визы
             UpdateWord(doc, 2, 6, 28, "учебная", 12, False)  # Категория визы
@@ -458,9 +454,9 @@ class Model():
             # Инденитификационный номер визы
             UpdateWord(doc, 2, 8, 8, self.data[row][34])
             if self.data[row][18] != '':
-                UpdateWord(doc, 2, 8, 24, self.data[row][18].strftime("%d.%m.%Y"))  # Дата выдачи визы
+                UpdateWord(doc, 2, 8, 24, self.data[row][18])  # Дата выдачи визы
             if self.data[row][19] != '':
-                UpdateWord(doc, 2, 8, 31, self.data[row][19].strftime("%d.%m.%Y"))  # Дата срока визы
+                UpdateWord(doc, 2, 8, 31, self.data[row][19])  # Дата срока визы
         elif self.data[row][28] == "РВПО":
             if self.data[row][16] != "" or self.data[row][16].isspace():
                 UpdateWord(doc, 2, 6, 4, self.data[row][33], 12, False)  # Кратност визы
@@ -471,9 +467,9 @@ class Model():
                 # Инденитификационный номер визы
                 UpdateWord(doc, 2, 8, 8, self.data[row][34])
                 if self.data[row][18] != '':
-                    UpdateWord(doc, 2, 8, 24, self.data[row][18].strftime("%d.%m.%Y"))  # Дата выдачи визы
+                    UpdateWord(doc, 2, 8, 24, self.data[row][18])  # Дата выдачи визы
                 if self.data[row][19] != '':
-                    UpdateWord(doc, 2, 8, 31, self.data[row][19].strftime("%d.%m.%Y"))  # Дата срока визы
+                    UpdateWord(doc, 2, 8, 31, self.data[row][19])  # Дата срока визы
         elif self.data[row][28] == "ВНЖ":
             if self.data[row][16] != "" or self.data[row][16].isspace():
                 UpdateWord(doc, 2, 6, 4, self.data[row]
@@ -485,39 +481,39 @@ class Model():
                 # Инденитификационный номер визы
                 UpdateWord(doc, 2, 8, 8, self.data[row][34])
                 if self.data[row][18] != '':
-                    UpdateWord(doc, 2, 8, 24, self.data[row][18].strftime("%d.%m.%Y"))  # Дата выдачи визы
+                    UpdateWord(doc, 2, 8, 24, self.data[row][18])  # Дата выдачи визы
                 if self.data[row][19] != '':
-                    UpdateWord(doc, 2, 8, 31, self.data[row][19].strftime("%d.%m.%Y"))  # Дата срока визы
+                    UpdateWord(doc, 2, 8, 31, self.data[row][19])  # Дата срока визы
         if self.data[row][38] == "":
             year_kon_st = 0
         else:
-            date = self.data[row][38].strftime("%d.%m.%Y")
+            date = self.data[row][38]
             year_kon_st = int(date[6]+date[7]+date[8]+date[9])
         if self.data[row][40] == "":
             year_gos_st = 0
         else:
-            date = self.data[row][40].strftime("%d.%m.%Y")
+            date = self.data[row][40]
             year_gos_st = int(date[6]+date[7]+date[8]+date[9])
         if year_gos_st > year_kon_st:
             UpdateWord(doc, 2, 12, 10, "гос.направление", 11, False)  # Направление
             if self.data[row][40] != '':
                 # Дата выдачи контракта
-                UpdateWord(doc, 2, 12, 21, self.data[row][40].strftime("%d.%m.%Y"), 11)
+                UpdateWord(doc, 2, 12, 21, self.data[row][40], 11)
             UpdateWord(doc, 2, 12, 28, self.data[row][35], 11)  # Номер контракта
             if self.data[row][40] != '':
-                UpdateWord(doc, 2, 14, 5, self.data[row][40].strftime("%d.%m.%Y"), 11)  # Срок обучения с
+                UpdateWord(doc, 2, 14, 5, self.data[row][40], 11)  # Срок обучения с
             if self.data[row][41] != '':
-                UpdateWord(doc, 2, 14, 15, self.data[row][41].strftime("%d.%m.%Y"), 11)  # Срок обучения по
+                UpdateWord(doc, 2, 14, 15, self.data[row][41], 11)  # Срок обучения по
         else:
             UpdateWord(doc, 2, 12, 10, "контракт", 11, False)  # Направление
             if self.data[row][38] != '':
                 # Дата выдачи контракта
-                UpdateWord(doc, 2, 12, 21, self.data[row][38].strftime("%d.%m.%Y"), 11)
+                UpdateWord(doc, 2, 12, 21, self.data[row][38], 11)
             UpdateWord(doc, 2, 12, 28, self.data[row][37], 11)  # Номер контракта
             if self.data[row][38] != '':
-                UpdateWord(doc, 2, 14, 5, self.data[row][38].strftime("%d.%m.%Y"), 11)  # Срок обучения с
+                UpdateWord(doc, 2, 14, 5, self.data[row][38], 11)  # Срок обучения с
             if self.data[row][39] != '':
-                UpdateWord(doc, 2, 14, 15, self.data[row][39].strftime("%d.%m.%Y"), 11)  # Срок обучения по
+                UpdateWord(doc, 2, 14, 15, self.data[row][39], 11)  # Срок обучения по
 
         # Сохранение изменений
         if os.path.isdir(".\\out"):

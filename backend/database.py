@@ -259,8 +259,9 @@ def fetch_person_by(
                 else:
                     new_row.append(str(field).strip() if field is not None else "")
             new_data.append(new_row)
-
-        return new_data
+        if new_data != []:
+            return new_data
+        return None
 
     return None
 
@@ -348,13 +349,12 @@ def update_person(
         query = "UPDATE persons SET " + ", ".join(updatable_fields) + f" WHERE {PersonsField.id} = :{PersonsField.id}"
         params[f"{PersonsField.id}"] = id  # Добавляем параметр id
 
+        # Выводим для отладки (если нужно)
+        # debug(query)
+        # debug(params)
 
-    # Выводим для отладки (если нужно)
-    debug(query)
-    debug(params)
-
-    # Выполняем запрос
-    update(query, params)
+        # Выполняем запрос
+        update(query, params)
 
 
 def check_rus_eng(text: str) -> bool:
