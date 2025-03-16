@@ -20,7 +20,7 @@ def debug(*args, **kwargs) -> None:
 
 def start_session(username, password) -> None:
     """Функция для создания сессии с БД."""
-    data_config = config.DevelopmentDatabaseConfig(username, password)
+    data_config = config.ProductionDatabaseConfig(username, password)
     global engine
     engine = create_engine(data_config.connection_url)
 
